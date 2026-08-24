@@ -1,0 +1,1996 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>Building Hybrid Agents</title>
+    <!link rel="preconnect" href="https://use.typekit.net" crossorigin />
+    <!link rel="stylesheet" href="https://use.typekit.net/yqw6imd.css" />
+    <style>
+      @font-face {
+        font-family: "Departure Mono";
+        src: url("./assets/fonts/DepartureMono-Regular.woff2") format("woff2");
+        font-weight: 400;
+        font-style: normal;
+        font-display: swap;
+      }
+
+      :root {
+        color-scheme: dark;
+        --mono-font: "Departure Mono", "SFMono-Regular", ui-monospace, monospace;
+        --serif-font: "plantin", "EB Garamond", "Garamond", "Times New Roman", "Times", serif;
+        --text: rgba(244, 246, 247, 0.96);
+        --muted: rgba(226, 232, 234, 0.68);
+        --soft: rgba(223, 229, 231, 0.62);
+        --rule: rgba(210, 225, 229, 0.18);
+        --rule-strong: rgba(210, 225, 229, 0.32);
+        --accent: rgba(216, 233, 235, 0.84);
+        background: #020507;
+        color: var(--text);
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html,
+      body {
+        margin: 0;
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+        cursor: default;
+        background: #020507;
+        overscroll-behavior: none;
+        touch-action: none;
+      }
+
+      body {
+        font-family: var(--serif-font);
+      }
+
+      #backdrop {
+        position: fixed;
+        inset: 0;
+        width: 100vw;
+        height: 100vh;
+        display: block;
+        background: radial-gradient(circle at 50% 8%, rgba(24, 45, 48, 0.32), rgba(3, 7, 9, 0.96) 58%, #020507 100%);
+      }
+
+      .backdrop-scrim {
+        position: fixed;
+        inset: 0;
+        pointer-events: none;
+        background:
+          radial-gradient(circle at 50% 0%, rgba(255, 255, 255, 0.03), transparent 34%),
+          linear-gradient(180deg, rgba(2, 5, 7, 0.18), rgba(2, 5, 7, 0.22) 34%, rgba(2, 5, 7, 0.58) 100%),
+          radial-gradient(circle at center, transparent 52%, rgba(0, 0, 0, 0.38) 100%);
+        z-index: 1;
+      }
+
+      .deck {
+        width: 1920px;
+        height: 1080px;
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform-origin: center center;
+        z-index: 2;
+      }
+
+      .deck-logo {
+        position: absolute;
+        left: 128px;
+        top: 48px;
+        width: 104px;
+        height: auto;
+        pointer-events: none;
+        z-index: 4;
+        opacity: 0.92;
+      }
+
+      .deck-logo img {
+        display: block;
+        width: 100%;
+        height: auto;
+      }
+
+      .demo-layout {
+        display: grid;
+        justify-items: center;
+        align-content: center;
+        margin-top: 34px;
+      }
+
+      .demo-video {
+        display: block;
+        width: auto;
+        height: auto;
+        max-width: 100%;
+        max-height: 700px;
+        margin: 34px auto 0;
+        border: 1px solid var(--rule-strong);
+        border-radius: 18px;
+        box-shadow: 0 24px 80px rgba(0, 0, 0, 0.42);
+        background: rgba(0, 0, 0, 0.35);
+        cursor: pointer;
+      }
+
+      .demo-layout .demo-video {
+        margin: 0;
+      }
+
+      .demo-model {
+        margin-top: 16px;
+        font-family: var(--mono-font);
+        font-size: 20px;
+        line-height: 1.4;
+        letter-spacing: 0.02em;
+        color: rgba(223, 229, 231, 0.58);
+        white-space: nowrap;
+      }
+
+      .code-block {
+        max-width: 1460px;
+        margin: 34px auto 0;
+        padding: 34px 38px;
+        border: 1px solid var(--rule);
+        border-radius: 18px;
+        background: rgba(0, 0, 0, 0.34);
+        color: rgba(244, 246, 247, 0.94);
+        font-family: var(--mono-font);
+        font-size: 25px;
+        line-height: 1.35;
+        letter-spacing: -0.01em;
+        white-space: pre-wrap;
+        overflow: hidden;
+      }
+
+      .code-block code {
+        font-family: inherit;
+      }
+
+      .diagram-block {
+        width: fit-content;
+        max-width: 1320px;
+        margin: 42px auto 0;
+        transform: translateX(48px);
+        color: rgba(244, 246, 247, 0.94);
+        font-family: Menlo, Monaco, "SFMono-Regular", Consolas, monospace;
+        font-variant-ligatures: none;
+        font-size: 31px;
+        line-height: 1.18;
+        letter-spacing: -0.03em;
+        white-space: pre;
+      }
+
+      .slide-image {
+        display: block;
+        max-width: 92%;
+        max-height: 760px;
+        margin: 0 auto;
+        border-radius: 18px;
+        box-shadow: 0 24px 80px rgba(0, 0, 0, 0.42);
+      }
+
+      .comparison-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 48px;
+        align-items: start;
+        margin-top: 36px;
+      }
+
+      .comparison-image {
+        display: block;
+        width: 100%;
+        max-height: 640px;
+        object-fit: contain;
+        border-radius: 16px;
+        box-shadow: 0 24px 80px rgba(0, 0, 0, 0.42);
+      }
+
+      .benchmark-prompt {
+        margin-top: 48px;
+        font-family: var(--mono-font);
+        font-size: 22px;
+        line-height: 1.45;
+        letter-spacing: 0.01em;
+        color: var(--soft);
+      }
+
+      .benchmark-prompt code {
+        color: rgba(244, 246, 247, 0.94);
+      }
+
+      .benchmark-settings {
+        margin-top: 14px;
+        font-family: var(--mono-font);
+        font-size: 20px;
+        line-height: 1.35;
+        letter-spacing: 0;
+        color: rgba(223, 229, 231, 0.72);
+        white-space: pre;
+      }
+
+      .benchmark-table {
+        width: 100%;
+        margin: 36px 0 72px;
+        border-collapse: collapse;
+        font-family: var(--mono-font);
+        color: rgba(244, 246, 247, 0.94);
+      }
+
+      .benchmark-table th,
+      .benchmark-table td {
+        padding: 18px 20px;
+        border-bottom: 1px solid var(--rule);
+        text-align: left;
+        vertical-align: top;
+        font-size: 23px;
+        line-height: 1.28;
+      }
+
+      .benchmark-table th {
+        color: var(--muted);
+        font-weight: 400;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        font-size: 17px;
+      }
+
+      .benchmark-table td:not(:first-child),
+      .benchmark-table th:not(:first-child) {
+        text-align: right;
+        white-space: nowrap;
+      }
+
+      .benchmark-footnote {
+        margin-top: 72px;
+        font-family: var(--mono-font);
+        font-size: 18px;
+        line-height: 1.4;
+        color: rgba(223, 229, 231, 0.58);
+      }
+
+      .hardware-slide .benchmark-table {
+        margin-top: 52px;
+        margin-bottom: 64px;
+      }
+
+      .hardware-costs {
+        margin-top: 70px;
+      }
+
+      .hardware-slide .benchmark-footnote {
+        margin-top: 90px;
+      }
+
+      .code-block .ts-keyword {
+        color: #8fd3ff;
+      }
+
+      .code-block .ts-type {
+        color: #c9b7ff;
+      }
+
+      .code-block .ts-string {
+        color: #b7f7c2;
+      }
+
+      .code-block .ts-comment {
+        color: rgba(223, 229, 231, 0.52);
+        font-style: italic;
+      }
+
+      .code-block .ts-number {
+        color: #ffd28f;
+      }
+
+      .code-block .ts-prop {
+        color: #ffe7a3;
+      }
+
+      .inline-logo {
+        display: inline-block;
+        width: 0.85em;
+        height: 0.85em;
+        margin-left: 0.18em;
+        vertical-align: -0.08em;
+      }
+
+      .deck-footer {
+        position: absolute;
+        left: 128px;
+        right: 128px;
+        bottom: 52px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        pointer-events: none;
+        z-index: 3;
+        font-family: var(--mono-font);
+        font-size: 18px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--soft);
+      }
+
+      .slide {
+        display: none;
+        width: 1920px;
+        height: 1080px;
+        padding: 92px 128px 110px;
+        align-content: center;
+      }
+
+      .slide.active {
+        display: grid;
+      }
+
+      .frame {
+        width: 100%;
+        max-width: 1540px;
+      }
+
+      .frame-narrow {
+        width: 100%;
+        max-width: 1320px;
+      }
+
+      .frame-wide {
+        width: 100%;
+        max-width: 1660px;
+      }
+
+      .center {
+        display: grid;
+        justify-items: center;
+        text-align: center;
+        margin-inline: auto;
+      }
+
+      h1,
+      h2,
+      h3,
+      p,
+      ul,
+      li,
+      pre {
+        margin: 0;
+      }
+
+      h1 {
+        font-family: var(--serif-font);
+        font-size: 118px;
+        font-weight: 400;
+        line-height: 0.96;
+        letter-spacing: -0.035em;
+        text-wrap: balance;
+      }
+
+      h2 {
+        font-family: var(--serif-font);
+        font-size: 84px;
+        font-weight: 400;
+        line-height: 1.02;
+        letter-spacing: -0.03em;
+        text-wrap: balance;
+      }
+
+      p,
+      li {
+        font-family: var(--serif-font);
+        font-size: 49px;
+        font-weight: 400;
+        line-height: 1.28;
+        letter-spacing: -0.01em;
+      }
+
+      ul {
+        padding-left: 48px;
+        margin-top: 26px;
+      }
+
+      li {
+        margin: 14px 0;
+      }
+
+      .eyebrow,
+      .subtitle,
+      .prediction-label,
+      .code,
+      .caption {
+        font-family: var(--mono-font);
+        letter-spacing: 0.08em;
+      }
+
+      .eyebrow {
+        margin-bottom: 28px;
+        font-size: 25px;
+        text-transform: uppercase;
+        color: var(--muted);
+      }
+
+      .title-slide .eyebrow {
+        margin-bottom: 34px;
+      }
+
+      .title-slide h1 {
+        max-width: 1100px;
+        font-style: italic;
+        font-weight: 400;
+      }
+
+      .slide.title-slide .frame {
+        transform: translateY(28px);
+      }
+
+      .subtitle {
+        margin-top: 30px;
+        font-size: 22px;
+        line-height: 1.5;
+        color: var(--soft);
+        text-transform: uppercase;
+      }
+
+      .big-text {
+        font-size: 80px;
+        line-height: 1.08;
+        letter-spacing: -0.03em;
+        text-wrap: balance;
+      }
+
+      .huge-text {
+        font-size: 114px;
+        line-height: 0.98;
+        letter-spacing: -0.04em;
+        text-wrap: balance;
+      }
+
+      .lead {
+        max-width: 1380px;
+      }
+
+      .quote {
+        margin-top: 30px;
+        font-style: italic;
+        color: rgba(244, 246, 247, 0.92);
+      }
+
+      .quote-large {
+        max-width: 1450px;
+        font-size: 58px;
+        line-height: 1.18;
+        letter-spacing: -0.02em;
+      }
+
+      .code {
+        font-size: 0.7em;
+        padding: 0.2em 0.45em;
+        color: rgba(244, 246, 247, 0.98);
+        background: rgba(255, 255, 255, 0.08);
+      }
+
+      .steps {
+        margin-top: 18px;
+      }
+
+      .step.hidden {
+        visibility: hidden;
+      }
+
+      .split {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 72px;
+        align-items: start;
+        margin-top: 34px;
+      }
+
+      .panel {
+        position: relative;
+      }
+
+      .panel h3 {
+        font-family: var(--mono-font);
+        font-size: 22px;
+        font-weight: 400;
+        line-height: 1.5;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: var(--muted);
+        margin-bottom: 16px;
+      }
+
+      .panel ul {
+        margin-top: 0;
+        padding-left: 34px;
+      }
+
+      .panel li {
+        font-size: 39px;
+        line-height: 1.28;
+        margin: 10px 0;
+      }
+
+      .dense li {
+        font-size: 43px;
+        line-height: 1.22;
+        margin: 12px 0;
+      }
+
+      .compact li {
+        font-size: 34px;
+        line-height: 1.25;
+        margin: 8px 0;
+      }
+
+      .prediction-slide h2 {
+        font-size: 92px;
+        margin-bottom: 50px;
+      }
+
+      .prediction-grid {
+        display: grid;
+        grid-template-columns: 1.14fr 0.86fr;
+        gap: 58px;
+        align-items: start;
+      }
+
+      .prediction-col {
+        position: relative;
+      }
+
+      .prediction-col--right {
+        padding-left: 42px;
+      }
+
+      .prediction-label {
+        margin-bottom: 18px;
+        font-size: 22px;
+        line-height: 1.5;
+        text-transform: uppercase;
+        color: var(--muted);
+      }
+
+      .prediction-col--right .prediction-label {
+        color: var(--soft);
+      }
+
+      .prediction-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+      }
+
+      .prediction-list li {
+        position: relative;
+        padding-left: 28px;
+        margin: 0 0 16px;
+        font-size: 39px;
+        line-height: 1.18;
+      }
+
+      .prediction-list li::before {
+        content: "•";
+        position: absolute;
+        left: 0;
+        top: 0;
+        color: var(--accent);
+      }
+
+      .prediction-col--right .prediction-list li::before {
+        color: var(--soft);
+      }
+
+      .rule-block {
+        max-width: 1480px;
+      }
+
+      .flow-diagram {
+        margin-top: 30px;
+        font-family: var(--mono-font);
+        font-size: 30px;
+        line-height: 1.3;
+        color: rgba(244, 246, 247, 0.9);
+        white-space: pre;
+      }
+
+      .flow-code {
+        max-width: 1560px;
+        margin-top: 28px;
+        padding: 26px 30px;
+        font-size: 21px;
+        line-height: 1.28;
+      }
+
+      .flow-code-small {
+        font-size: 18px;
+        line-height: 1.22;
+      }
+
+      .flow-caption {
+        margin-top: 22px;
+        font-family: var(--mono-font);
+        font-size: 22px;
+        line-height: 1.35;
+        letter-spacing: 0.02em;
+        color: var(--soft);
+      }
+
+      .flow-split {
+        display: grid;
+        grid-template-columns: 0.9fr 1.1fr;
+        gap: 38px;
+        align-items: start;
+        margin-top: 28px;
+      }
+
+      .rpc-layout {
+        display: grid;
+        grid-template-columns: 1.12fr 0.88fr;
+        gap: 34px;
+        align-items: start;
+        margin-top: 26px;
+      }
+
+      .rpc-flow {
+        margin-top: 18px;
+        font-size: 24px;
+        line-height: 1.25;
+        transform: none;
+      }
+
+      .rpc-terminal {
+        margin-top: 20px;
+        padding: 30px 34px;
+        font-size: 21px;
+        line-height: 1.34;
+        max-width: none;
+      }
+
+      .rpc-terminal .success-line {
+        color: #b7f7c2;
+      }
+
+      .rpc-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 14px;
+        font-family: var(--mono-font);
+      }
+
+      .rpc-group {
+        padding: 15px 16px;
+        border: 1px solid var(--rule);
+        border-radius: 14px;
+        background: rgba(0, 0, 0, 0.28);
+      }
+
+      .rpc-group h3 {
+        margin: 0 0 8px;
+        font-family: var(--mono-font);
+        font-size: 15px;
+        font-weight: 400;
+        line-height: 1.2;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--muted);
+      }
+
+      .rpc-group p {
+        font-family: var(--mono-font);
+        font-size: 16px;
+        line-height: 1.32;
+        letter-spacing: 0;
+        color: rgba(244, 246, 247, 0.9);
+      }
+    </style>
+  </head>
+  <body>
+    <canvas id="backdrop" aria-hidden="true"></canvas>
+    <div class="backdrop-scrim"></div>
+
+    <div class="deck">
+      <div class="deck-logo" aria-hidden="true">
+        <img src="earendil-dark-mode.svg" alt="" />
+      </div>
+
+      <div class="deck-footer" aria-hidden="true">
+        <span>Cristina Poncela Cubeiro</span>
+        <span>Building Hybrid Agents</span>
+      </div>
+
+      <!--
+      Source outline: dynamic/building-hybrid-agents/poc.md
+      Do not invent details where the outline does not provide enough information. Use TODO placeholders.
+      -->
+
+      <!-- Slide 1 -->
+      <section class="slide title-slide" data-slide="1" data-notes="Title only: Building Hybrid Agents">
+        <div class="frame title-slide center">
+          <h1>Building Hybrid Agents</h1>
+          <p class="subtitle">Code Europe · September 2026 · Warsaw</p>
+        </div>
+      </section>
+      <!-- Slide 2 -->
+      <section class="slide" data-slide="2" data-notes="Short intro: who am I, what do I do. Learned to code with AI. Work at Earendil, where I mostly have been working on Lefos and Pi (from Mario Zechner).">
+        <div class="frame frame-wide">
+          <h2>Nice to meet you</h2>
+          <ul class="dense">
+             <li>Who am I and what do I do</li>
+            <li>Work at Earendil</li>
+            <li>Learned to code with AI</li>
+            <li>Mostly working on Lefos and <img class="inline-logo" src="logo.svg" alt="Pi logo" /></li>
+          </ul>
+        </div>
+      </section>
+      <!-- Slide 3 -->
+      <section class="slide" data-slide="3" data-notes="Part I: Local vs Cloud">
+        <div class="frame frame-narrow center">
+          <p class="eyebrow">Part I</p>
+          <p class="huge-text">Local vs Cloud</p>
+        </div>
+      </section>
+      <!-- Slide 4 -->
+      <section class="slide" data-slide="4" data-notes="Explain the context: there has been a lot of talk about cloud and local agents.">
+        <div class="frame frame-wide">
+          <h2>The Context</h2>
+          <ul class="dense">
+            <li>There has been a lot of talk about local agents and cloud agents</li>
+            <li>First, there was a web interface</li>
+            <li>Now we all can't live without local agents, especially for coding</li>
+            <li>Where does the model live? Where does the loop run?</li>
+          </ul>
+        </div>
+      </section>
+      <!-- Slide 5 -->
+      <section class="slide" data-slide="5" data-notes="Local agents: OpenClaw and Hermes Agent. Runtime lives on your device, but tokens are still sourced from an upstream cloud provider.">
+        <div class="frame frame-wide">
+          <h2>Local Agents</h2>
+          <ul class="dense">
+            <li>OpenClaw, Hermes, OpenCode, Pi</li>
+            <li>Runtime lives on your device (CPU or GPU)</li>
+            <li>Tokens are still sourced from an upstream cloud provider</li>
+            <li>Usually with an option to deploy your agent in a cloud container or VM</li>
+          </ul>
+        </div>
+      </section>
+      <!-- Slide 6 -->
+      <section class="slide" data-slide="6" data-notes="Llama.cpp Meta-Llama-3.1-8B-Instruct-Q4_K_M.gguf, pi example">
+        <div class="frame frame-wide center">
+          <h2>Fully Local</h2>
+          <div class="demo-layout">
+            <video class="demo-video" src="llama.cpp-demo.mp4" autoplay muted playsinline preload="auto"></video>
+            <p class="demo-model">llama.cpp · Meta-Llama-3.1-8B-Instruct-Q4_K_M.gguf</p>
+          </div>
+        </div>
+      </section>
+      <!-- Slide 7 -->
+      <section class="slide" data-slide="7" data-notes="Problems with only local">
+        <div class="frame frame-wide">
+          <h2>Problems With Local-Only</h2>
+          <ul class="dense">
+            <li>Processes can only be live while your device is on</li>
+            <li>Discoverability of agents: they usually live behind a NAT</li>
+            <li>Performance depends heavily on GPUs / hardware</li>
+            <li>Not there yet in terms of latency and performance, though very promising</li>
+            <li>Time to first token and tokens per second</li>
+          </ul>
+        </div>
+      </section>
+      <!-- Slide 8 -->
+      <section class="slide" data-slide="8" data-notes="Problems with only local. Benchmark caveats: local model was already loaded, so this excludes cold model load time. Cloud result depends on provider routing/load. TTFT measured as first content chunk. Output speed measured as completion tokens divided by time after first content chunk.">
+        <div class="frame frame-wide">
+          <h2>Problems With Local-Only</h2>
+          <p class="benchmark-prompt">Prompt: <code>In exactly 80 words, explain what an AI agent is for a software engineer.</code></p>
+          <pre class="benchmark-settings">Settings:
+temperature: 0
+max_tokens: 160
+stream: true</pre>
+          <table class="benchmark-table">
+            <thead>
+              <tr>
+                <th>Model</th>
+                <th>Runs</th>
+                <th>Mean TTFT</th>
+                <th>Mean output speed</th>
+                <th>Mean total time</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><code>Meta-Llama-3.1-8B-Instruct-Q4_K_M</code><br />local <code>llama.cpp</code></td>
+                <td>10/10</td>
+                <td>0.061s</td>
+                <td>19.6 tok/s</td>
+                <td>5.42s</td>
+              </tr>
+              <tr>
+                <td><code>anthropic/claude-sonnet-4.6</code><br />OpenRouter</td>
+                <td>10/10</td>
+                <td>1.326s</td>
+                <td>44.9 tok/s</td>
+                <td>3.91s</td>
+              </tr>
+            </tbody>
+          </table>
+          <p class="benchmark-footnote">* We don't account for local model loading, only first request. ~1.15s for me when testing.</p>
+        </div>
+      </section>
+      <!-- Slide 9 -->
+      <section class="slide hardware-slide" data-slide="9" data-notes="Hardware check: Qwen2.5-Coder-7B-Instruct-Q4_K_M on my Apple M4 with llama-bench. CPU-only vs GPU offload numbers are measured locally. Price estimates are order-of-magnitude: 24GB consumer GPU is RTX 4090/5090-class, based on NVIDIA GeForce RTX 4090 launch MSRP $1,599 and RTX 5090 MSRP $1,999 plus European retail/VAT variance. 48GB workstation GPU means NVIDIA RTX 6000 / RTX PRO 6000-class cards, which are commonly listed in the several-thousand-euro range, often €5k+. Not a live quote.">
+        <div class="frame frame-wide">
+          <h2>Local Performance Is Hardware</h2>
+          <table class="benchmark-table">
+            <thead>
+              <tr>
+                <th>Setup</th>
+                <th>Prompt processing</th>
+                <th>Generation</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><code>Qwen2.5-Coder-7B-Instruct-Q4_K_M</code><br />Apple M4, CPU-only</td>
+                <td>22.6 tok/s</td>
+                <td>13.6 tok/s</td>
+              </tr>
+              <tr>
+                <td><code>Qwen2.5-Coder-7B-Instruct-Q4_K_M</code><br />Apple M4, GPU offload</td>
+                <td>185.7 tok/s</td>
+                <td>18.5 tok/s</td>
+              </tr>
+            </tbody>
+          </table>
+          <ul class="dense compact hardware-costs">
+            <li>24GB consumer GPU: roughly €1.5k–€2.5k. 48GB workstation GPU: often €5k+</li>
+          </ul>
+          <p class="benchmark-footnote">* Price estimates: NVIDIA RTX 4090/5090-class consumer GPUs and NVIDIA RTX 6000 / RTX PRO 6000-class workstation GPUs.<br />* Claude Fable 5 base input tokens cost $10 / MTok, as per https://docs.anthropic.com/en/docs/about-claude/pricing</p>
+        </div>
+      </section>
+      <!-- Slide 10 -->
+      <section class="slide" data-slide="10" data-notes="Cloud Lefos">
+        <div class="frame frame-wide center">
+          <h2>Fully Cloud</h2>
+          <video class="demo-video" src="lefos.mp4" autoplay loop muted playsinline preload="auto"></video>
+        </div>
+      </section>
+      <!-- Slide 11 -->
+      <section class="slide" data-slide="11" data-notes="Problems with only cloud. Original sentences: I pay 2.5k€ every year for the newest computer as a developer. Why do I also have to pay some monthly subscription for a cloud server service that runs an agentic runtime or loop when I can do that locally anyways? Privacy: I'd rather have my pi sessions living on my local disk, even though I'm still streaming my conversations to some token provider whose ZDR may or may not actually keep my data. Control: I decide the sandbox, the tools, the files and directories my agent can access, etc. Residential IP limitation example: iMessage ToS on hardware and why Mac Minis. Login via cloud egress IP is usually blocked as suspicious.">
+        <div class="frame frame-wide">
+          <h2>Problems With Cloud-Only</h2>
+          <div class="split">
+            <div class="panel">
+              <h3>Choice</h3>
+              <ul>
+                <li>I already have hardware</li>
+                <li>Privacy</li>
+                <li>Control: sandbox, tools, file and directory access</li>
+              </ul>
+            </div>
+            <div class="panel">
+              <h3>Capability</h3>
+              <ul>
+                <li>Cloud egress IP vs residential IP</li>
+                <li>ToS, e.g. iMessage</li>
+                <li>Mac Minis</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </section>
+      <!-- Slide 12 -->
+      <section class="slide" data-slide="12" data-notes="Local transcript succeeds; cloud transcript hits blocking / bot detection. Local on the left, cloud on the right.">
+        <div class="frame frame-wide">
+          <div class="comparison-grid">
+            <div class="panel">
+              <h3>Local</h3>
+              <img class="comparison-image" src="local-transcript-test.png" alt="Local transcript test" />
+            </div>
+            <div class="panel">
+              <h3>Cloud</h3>
+              <img class="comparison-image" src="cloud-transcript-test.png" alt="Cloud transcript test" />
+            </div>
+          </div>
+        </div>
+      </section>
+      <!-- Slide 13 -->
+      <section class="slide" data-slide="13" data-notes="Hybrid agents: briefly what I mean, loose example of what could live where. Why the previous are not what I mean.">
+        <div class="frame frame-wide rule-block">
+          <h2>Hybrid Agents</h2>
+          <div class="quote quote-large">Not a local harness with a cloud model. Taking the best of both worlds.</div>
+          <ul class="dense">
+            <li>Local's privacy, cost control, and ability to work offline</li>
+            <li>Cloud's durability and connectivity</li>
+          </ul>
+        </div>
+      </section>
+      <!-- Slide 14 -->
+      <section class="slide" data-slide="14" data-notes="Part II: Decomposing the agent">
+        <div class="frame frame-narrow center">
+          <p class="eyebrow">Part II</p>
+          <p class="huge-text">Decomposing the agent</p>
+        </div>
+      </section>
+      <!-- Slide 15 -->
+      <section class="slide" data-slide="15" data-notes="What is an agent?">
+        <div class="frame frame-narrow center">
+          <p class="huge-text">What is an agent?</p>
+        </div>
+      </section>
+      <!-- Slide 16 -->
+      <section class="slide" data-slide="16" data-notes="Diagram: model, harness, storage, server, client, ...">
+        <div class="frame frame-wide">
+          <pre class="diagram-block">┌────────┐
+│ Client │
+└───┬────┘
+    │ attach / command
+    ▼
+┌────────┐
+│ Server │
+└───┬────┘
+    │ discover / route
+    ▼
+┌─────────┐      tool calls       ┌─────────┐
+│ Harness │ ────────────────────▶ │ Runtime │
+└───┬──┬──┘ ◀──────────────────── └────┬────┘
+    │  │       tool results            │
+    │  │                               │ events / artifacts
+    │  │ read/write session            ▼
+    │  └────────────────────────▶ ┌─────────┐
+    │                             │ Storage │
+    │ prompts / completions       └─────────┘
+    ▼
+┌───────┐
+│ Model │
+└───────┘</pre>
+        </div>
+      </section>
+      <!-- Slide 17 -->
+      <section class="slide" data-slide="17" data-notes="Model. Local vs cloud, but via something like pi-ai we don't need to know as a client. Just make a request to provider-x/model-y and we should request to what is loaded.">
+        <div class="frame frame-wide">
+          <h2>Model</h2>
+          <ul class="dense">
+            <li>Local vs cloud</li>
+            <li>Via something like <code>pi-ai</code>, we don't need to know as a client</li>
+            <li>Just make a request to <code>provider-x/model-y</code></li>
+            <li>We should request to what is loaded</li>
+          </ul>
+        </div>
+      </section>
+      <!-- Slide 18 -->
+      <section class="slide" data-slide="18" data-notes="Example. For instance, llama.cpp example uses localhost server so we can communicate between the Hugging Face .gguf model file and the process in which the agent loop is actually turning. For the cloud ones, we call their SDKs.">
+        <div class="frame frame-wide">
+          <h2>Model Example</h2>
+          <div class="split">
+            <div class="panel">
+              <h3>Local</h3>
+              <ul>
+                <li><code>llama.cpp</code> example uses localhost “server”</li>
+                <li>Communicates between the Hugging Face <code>.gguf</code> model file and the process where the agent loop is turning</li>
+              </ul>
+            </div>
+            <div class="panel">
+              <h3>Cloud</h3>
+              <ul>
+                <li>For the cloud ones, we call their SDKs</li>
+                <li>TODO: add exact SDK/code example</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </section>
+      <!-- Slide 19 -->
+      <section class="slide" data-slide="19" data-notes="Harness. Colin's post: system prompt, tools, choice of sandbox, extensions, etc. What actually drives the model - the agent loop.">
+        <div class="frame frame-wide">
+          <h2>Harness</h2>
+          <ul class="dense">
+            <li>What actually drives the model</li>
+            <li>The agent loop</li>
+            <li>System prompt</li>
+            <li>Tools</li>
+            <li>Choice of sandbox</li>
+            <li>Extensions</li>
+            <li>TODO: Colin's post reference</li>
+          </ul>
+        </div>
+      </section>
+      <!-- Slide 20 -->
+      <section class="slide" data-slide="20" data-notes="Example">
+        <div class="frame frame-narrow center">
+          <p class="huge-text">Example</p>
+          <p class="big-text">TODO</p>
+        </div>
+      </section>
+      <!-- Slide 21 -->
+      <section class="slide" data-slide="21" data-notes="Runtime / environment. Where the actual tool calls and side effects occur">
+        <div class="frame frame-wide">
+          <h2>Runtime / Environment</h2>
+          <ul class="dense">
+            <li>Where the actual tool calls occur</li>
+            <li>Where side effects occur</li>
+          </ul>
+        </div>
+      </section>
+      <!-- Slide 22 -->
+      <section class="slide" data-slide="22" data-notes="Example of how this is abstracted in pi">
+        <div class="frame frame-wide">
+          <h2>Runtime / Environment Example</h2>
+          <ul class="dense">
+            <li>Example of how this is abstracted in pi</li>
+            <li>TODO: add exact pi abstraction / code</li>
+          </ul>
+        </div>
+      </section>
+      <!-- Slide 23 -->
+      <section class="slide" data-slide="23" data-notes="Storage. Transcripts. Stuff like encrypted reasoning and why local and cloud don't play on the same level field.">
+        <div class="frame frame-wide">
+          <h2>Storage</h2>
+          <ul class="dense">
+            <li>Transcripts</li>
+            <li>Encrypted reasoning</li>
+            <li>Why local and cloud don't play on the same level field</li>
+          </ul>
+        </div>
+      </section>
+      <!-- Slide 24 -->
+      <section class="slide" data-slide="24" data-notes="Example: jsonl vs sqlite sessions in pi, encrypted reasoning error">
+        <div class="frame frame-wide center">
+          <img class="slide-image" src="jsonl-example.png" alt="" />
+        </div>
+      </section>
+      <!-- Slide 25 -->
+      <section class="slide" data-slide="25" data-notes="Example: same Pi session stored in SQLite tables">
+        <div class="frame frame-wide center">
+          <img class="slide-image" src="sqlite-example.png" alt="" />
+        </div>
+      </section>
+      <!-- Slide 26 -->
+      <section class="slide" data-slide="26" data-notes="Server">
+        <div class="frame frame-narrow center">
+          <p class="huge-text">Server</p>
+          <p class="big-text">TODO</p>
+        </div>
+      </section>
+      <!-- Slide 27 -->
+      <section class="slide" data-slide="27" data-notes="Control plane. Coordinator for discovery">
+        <div class="frame frame-wide">
+          <h2>Control Plane</h2>
+          <ul class="dense">
+            <li>Coordinator</li>
+            <li>Broker service for discovery</li>
+            <li>TODO: add exact relationship between server, coordinator</li>
+          </ul>
+        </div>
+      </section>
+      <!-- Slide 28 -->
+      <section class="slide" data-slide="28" data-notes="Client: tui, Electron desktop app, mobile app, web, mcp? Unix socket vs ws">
+        <div class="frame frame-wide">
+          <h2>Client</h2>
+          <ul class="dense">
+            <li>TUI</li>
+            <li>Electron desktop app</li>
+            <li>Mobile app</li>
+            <li>Web</li>
+            <li>MCP?</li>
+            <li>Unix socket vs WebSocket</li>
+          </ul>
+        </div>
+      </section>
+      <!-- Slide 29 -->
+      <section class="slide" data-slide="29" data-notes="Example">
+        <div class="frame frame-narrow center">
+          <p class="huge-text">Example</p>
+          <p class="big-text">TODO</p>
+        </div>
+      </section>
+      <!-- Slide 30 -->
+      <section class="slide" data-slide="30" data-notes="Part III: Composing the agent">
+        <div class="frame frame-narrow center">
+          <p class="eyebrow">Part III</p>
+          <p class="huge-text">Composing the agent</p>
+        </div>
+      </section>
+      <!-- Slide 31 -->
+      <section class="slide" data-slide="31" data-notes="If designed with enough abstraction, every component of the agent should be able to live anywhere, arbitrarily.">
+        <div class="frame frame-narrow center">
+          <p class="big-text">If designed with enough abstraction, every component of the agent should be able to</p>
+          <p class="huge-text">live anywhere, arbitrarily.</p>
+        </div>
+      </section>
+      <!-- Slide 32 -->
+      <section class="slide" data-slide="32" data-notes="How to abstract FileSystem, etc 1 by 1 to show the other stuff. We attach to sessions, etc">
+        <div class="frame frame-wide">
+          <h2>Abstracting Components</h2>
+          <ul class="dense">
+            <li>How to abstract FileSystem, etc one by one to show the other stuff</li>
+            <li>We attach to sessions, etc</li>
+            <li>TODO: add exact abstractions and flow</li>
+          </ul>
+        </div>
+      </section>
+      <!-- Slide 33 -->
+      <section class="slide" data-slide="33" data-notes="Example: Search API (https://github.com/earendil-works/pi/pull/7797/changes). Snippet 1: common composable search interface.">
+        <div class="frame frame-wide">
+          <pre class="code-block"><code class="language-ts">export interface SessionSearchOptions {
+  /** Restrict results to specific canonical entry types. */
+  readonly entryTypes?: readonly Entry[&quot;type&quot;][];
+
+  /** Maximum number of hits to return. */
+  readonly limit?: number;
+
+  /** Cancellation, e.g. search-as-you-type. */
+  readonly signal?: AbortSignal;
+}
+
+export interface SessionSearchHit {
+  /** Session owning the entry. */
+  readonly sessionId: string;
+
+  /** Entry inside that session. */
+  readonly entryId: string;
+}
+
+export interface SessionSearch&lt;T extends SessionSearchHit = SessionSearchHit&gt; {
+  search(text: string, options?: SessionSearchOptions): AsyncIterable&lt;T&gt;;
+}</code></pre>
+        </div>
+      </section>
+      <!-- Slide 34 -->
+      <section class="slide" data-slide="34" data-notes="Search API snippet 2: extends to scanning for in-memory storage and JSONL; portable identity across storage backends.">
+        <div class="frame frame-wide">
+          <pre class="code-block"><code class="language-ts">export type ScanningReadable&lt;TMetadata extends SessionMetadata = SessionMetadata&gt; =
+  Pick&lt;SessionStorage&lt;TMetadata&gt;, &quot;getMetadata&quot; | &quot;findEntries&quot; | &quot;getLabel&quot;&gt;;
+
+export interface ScanningSessionSearchHit extends SessionSearchHit {
+  readonly timestamp: number;
+  readonly snippet: string;
+}
+
+// Instead of:
+// repo.search({ text: &quot;Warsaw&quot; })
+
+// We do:
+const search: SessionSearch = createScanningSessionSearch([sessionA, sessionB]);
+
+for await (const hit of search.search(&quot;Warsaw&quot;, { limit: 10 })) {
+  // portable identity
+  hit.sessionId;
+  hit.entryId;
+}</code></pre>
+        </div>
+      </section>
+      <!-- Slide 35 -->
+      <section class="slide" data-slide="35" data-notes="Part transition: separating the client from the server/orchestrator process.">
+        <div class="frame frame-narrow center">
+          <p class="huge-text">Separating the client from the server</p>
+        </div>
+      </section>
+      <!-- Slide 36 -->
+      <section class="slide" data-slide="36" data-notes="Start a local Pi orchestrator daemon. The CLI talks to the daemon over a Unix socket using JSON IPC.">
+        <div class="frame frame-wide">
+          <h2>1. Start a local Pi daemon</h2>
+          <pre class="flow-diagram">CLI
+ │
+ │  JSON IPC over Unix socket
+ ▼
+Pi Orchestrator Daemon
+ └─ /tmp/pi-orchestrator-serve-test/orchestrator/orchestrator.sock</pre>
+          <pre class="code-block flow-code"><code>orchestrator listening on
+/tmp/pi-orchestrator-serve-test/orchestrator/orchestrator.sock</code></pre>
+          <p class="flow-caption">The daemon owns lifecycle; the CLI only sends IPC commands.</p>
+        </div>
+      </section>
+      <!-- Slide 37 -->
+      <section class="slide" data-slide="37" data-notes="The Unix socket IPC returns structured JSON responses for commands like status.">
+        <div class="frame frame-wide">
+          <h2>2. Talk to it over IPC</h2>
+          <pre class="code-block flow-code"><code>{
+  "type": "status_result",
+  "ok": true,
+  "instance": {
+    "id": "f034c4fc-7f5b-4ca4-a90b-8860e7b43604",
+    "status": "starting",
+    "cwd": "/Users/cristinaponcela/Desktop/pi-mono",
+    "label": "cli-test"
+  }
+}</code></pre>
+          <p class="flow-caption">Same idea as a small local server, but addressed by a socket file instead of a public port.</p>
+        </div>
+      </section>
+      <!-- Slide 38 -->
+      <section class="slide" data-slide="38" data-notes="The local machine registers with a control-plane broker service for discovery. The broker tracks online machines and capabilities, but does not run the Pi itself.">
+        <div class="frame frame-wide">
+          <h2>3. Register the machine with a broker</h2>
+          <pre class="flow-diagram">Pi Orchestrator Daemon
+ │
+ │  register machine + capabilities
+ ▼
+Control-plane Broker
+ └─ machines online, spawn-capable, last seen</pre>
+          <pre class="code-block flow-code flow-code-small"><code>$ curl -H 'Authorization: Bearer dev-user' http://localhost:8788/v1/machines
+
+{
+  "machines": [
+    {
+      "id": "machine_b818fd0d-4995-433b-9f0c-9cb9b88b4a58",
+      "hostname": "Cristinas-MacBook-Air.local",
+      "platform": "darwin",
+      "arch": "arm64",
+      "capabilities": { "spawn": true, "relay": false, "iroh": false },
+      "status": "online"
+    }
+  ]
+}</code></pre>
+        </div>
+      </section>
+      <!-- Slide 39 -->
+      <section class="slide" data-slide="39" data-notes="Spawn a Pi through the orchestrator CLI. The spawn happens locally inside the daemon process.">
+        <div class="frame frame-wide">
+          <h2>4. Spawn a Pi locally</h2>
+          <pre class="flow-diagram">CLI ── spawn --label test-pi ──▶ Local Orchestrator ──▶ Pi Runtime</pre>
+          <pre class="code-block flow-code"><code>$ node packages/orchestrator/dist/cli.js spawn \
+    --cwd /Users/cristinaponcela/Desktop/pi-mono \
+    --label test-pi
+
+{
+  "type": "spawn_result",
+  "ok": true,
+  "instance": {
+    "id": "ef833edd-b77b-4e8c-b1a8-df49e3df2463",
+    "status": "online",
+    "label": "test-pi",
+    "sessionId": "019edad6-6327-7852-9f06-a3269862b5ca"
+  }
+}</code></pre>
+        </div>
+      </section>
+      <!-- Slide 40 -->
+      <section class="slide" data-slide="40" data-notes="After spawn, the Pi runtime is registered with the broker for discovery. The broker knows the Pi is online and which machine owns it.">
+        <div class="frame frame-wide">
+          <h2>5. The broker sees the Pi</h2>
+          <pre class="flow-diagram">Spawned Pi
+ │
+ │  register runtime + transport
+ ▼
+Control-plane Broker
+ └─ Pi online, owned by machine, local-rpc transport</pre>
+          <pre class="code-block flow-code"><code>{
+  "pis": [
+    {
+      "id": "pi_2de8b871-0bd3-493f-a12e-606e28f6bd01",
+      "machineId": "machine_b818fd0d-4995-433b-9f0c-9cb9b88b4a58",
+      "label": "test-pi",
+      "transport": "local-rpc",
+      "status": "online"
+    }
+  ]
+}</code></pre>
+        </div>
+      </section>
+      <!-- Slide 41 -->
+      <section class="slide" data-slide="41" data-notes="Once the Pi is spawned, we can drive the session through the existing Pi RPC command surface. This is the remote-control layer: prompt, steer, inspect state, switch sessions, run bash, compact, export, and so on.">
+        <div class="frame frame-wide">
+          <h2>6. Drive the session remotely</h2>
+          <pre class="flow-diagram rpc-flow">Remote client / CLI ── RPC command ──▶ Orchestrator ──▶ Pi Runtime</pre>
+          <div class="rpc-layout">
+            <pre class="code-block rpc-terminal"><code>$ orchestrator rpc ef833edd... \
+  '{"type":"prompt","message":"Reply with exactly: hello from orchestrator"}'
+
+<span class="success-line">{ "command": "prompt", "success": true }</span>
+
+$ orchestrator rpc ef833edd... \
+  '{"type":"get_last_assistant_text"}'
+
+<span class="success-line">{ "text": "hello from orchestrator" }</span></code></pre>
+            <div class="rpc-grid">
+              <div class="rpc-group">
+                <h3>Conversation</h3>
+                <p>prompt · steer · follow_up · abort · get_last_assistant_text</p>
+              </div>
+              <div class="rpc-group">
+                <h3>Inspect</h3>
+                <p>get_state · get_messages · get_commands · get_session_stats · get_available_models</p>
+              </div>
+              <div class="rpc-group">
+                <h3>Sessions</h3>
+                <p>new_session · switch_session · fork · clone · get_fork_messages · set_session_name</p>
+              </div>
+              <div class="rpc-group">
+                <h3>Runtime controls</h3>
+                <p>set_model · cycle_model · set_thinking_level · cycle_thinking_level</p>
+              </div>
+              <div class="rpc-group">
+                <h3>Modes / policies</h3>
+                <p>set_steering_mode · set_follow_up_mode · set_auto_compaction · set_auto_retry</p>
+              </div>
+              <div class="rpc-group">
+                <h3>Tools / output</h3>
+                <p>bash · abort_bash · compact · abort_retry · export_html</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+      <!-- Slide 42 -->
+      <section class="slide" data-slide="42" data-notes="Lessons learned: Lefos, why we need hybrid">
+        <div class="frame frame-wide">
+          <h2>Lessons Learned: Lefos</h2>
+          <ul class="dense">
+            <li>Lefos</li>
+            <li>Why we need hybrid</li>
+            <li>TODO: add specific lesson bullets</li>
+          </ul>
+        </div>
+      </section>
+      <!-- Slide 43 -->
+      <section class="slide" data-slide="43" data-notes="The goal is control, and choice. This is why I like OSS">
+        <div class="frame frame-narrow center">
+          <p class="huge-text">The goal is control, and choice.</p>
+        </div>
+      </section>
+      <!-- Slide 44 -->
+      <section class="slide" data-slide="44" data-notes="If everything is composable, you decide what lives where.">
+        <div class="frame frame-narrow center">
+          <p class="big-text">If everything is composable,</p>
+          <p class="huge-text">you decide</p>
+          <p class="big-text">what lives where.</p>
+        </div>
+      </section>
+
+    </div>
+
+    <script>
+      (() => {
+        const escapeHtml = (value) =>
+          value
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;");
+
+        const tokenPattern = /(\/\/[^\n]*|\/\*[\s\S]*?\*\/)|(`(?:\\.|[^`])*`|"(?:\\.|[^"\\])*"|'(?:\\.|[^'\\])*')|\b(export|interface|readonly|type|extends|const|for|await|of|in|return|async|function|from|import)\b|\b(string|number|boolean|void|never|unknown|Entry|AbortSignal|SessionSearchOptions|SessionSearchHit|SessionSearch|AsyncIterable|ScanningReadable|SessionMetadata|SessionStorage|ScanningSessionSearchHit|Pick)\b|\b(\d+)\b|\b([A-Za-z_$][\w$]*)(?=\s*:)/g;
+
+        const highlightTypeScript = (source) => {
+          let out = "";
+          let pos = 0;
+          source.replace(tokenPattern, (match, comment, string, keyword, type, number, prop, offset) => {
+            out += escapeHtml(source.slice(pos, offset));
+            const klass = comment
+              ? "ts-comment"
+              : string
+                ? "ts-string"
+                : keyword
+                  ? "ts-keyword"
+                  : type
+                    ? "ts-type"
+                    : number
+                      ? "ts-number"
+                      : "ts-prop";
+            out += `<span class="${klass}">${escapeHtml(match)}</span>`;
+            pos = offset + match.length;
+            return match;
+          });
+          out += escapeHtml(source.slice(pos));
+          return out;
+        };
+
+        document.querySelectorAll("code.language-ts").forEach((code) => {
+          code.innerHTML = highlightTypeScript(code.textContent);
+        });
+      })();
+    </script>
+
+    <script>
+      (() => {
+        const canvas = document.getElementById("backdrop");
+        const gl = canvas.getContext("webgl", { antialias: false, depth: false, stencil: false, alpha: false });
+
+        if (!gl) {
+          return;
+        }
+
+        const prefersReducedMotion =
+          window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+        const LOW_DPI_THRESHOLD = 1.5;
+        const renderScale = (window.devicePixelRatio || 1) < LOW_DPI_THRESHOLD ? 0.68 : 0.4;
+
+        const oceanVertexShaderSource = `
+          attribute vec2 position;
+          void main() {
+            gl_Position = vec4(position, 0.0, 1.0);
+          }
+        `;
+
+        const oceanFragmentShaderSource = `
+          precision highp float;
+          uniform vec2 iResolution;
+          uniform float iTime;
+
+          #define PI 3.14159265359
+          #define DRAG_MULT 0.38
+          #define WATER_DEPTH 1.0
+          #define CAMERA_HEIGHT 1.5
+          #define ITERATIONS_RAYMARCH 8
+          #define ITERATIONS_NORMAL 16
+          #define RAYMARCH_STEPS 32
+
+          float hash21(vec2 p) {
+            return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453);
+          }
+
+          mat3 createRotationMatrixAxisAngle(vec3 axis, float angle) {
+            float s = sin(angle);
+            float c = cos(angle);
+            float oc = 1.0 - c;
+            return mat3(
+              oc * axis.x * axis.x + c, oc * axis.x * axis.y - axis.z * s, oc * axis.z * axis.x + axis.y * s,
+              oc * axis.x * axis.y + axis.z * s, oc * axis.y * axis.y + c, oc * axis.y * axis.z - axis.x * s,
+              oc * axis.z * axis.x - axis.y * s, oc * axis.y * axis.z + axis.x * s, oc * axis.z * axis.z + c
+            );
+          }
+
+          vec2 dirToScreenUV(vec3 dir) {
+            vec3 unrotated = createRotationMatrixAxisAngle(vec3(1.0, 0.0, 0.0), -0.14) * dir;
+            if (unrotated.z <= 0.0) return vec2(-1.0);
+            vec2 uv = (unrotated.xy / unrotated.z) * 1.5;
+            vec2 ndc = uv / vec2(iResolution.x / iResolution.y, 1.0);
+            return ndc * 0.5 + 0.5;
+          }
+
+          float star(vec2 screenUv, vec2 cellId, vec2 grid) {
+            float rnd = hash21(cellId);
+            if (rnd > 0.8) return 0.0;
+            vec2 starPos = vec2(hash21(cellId + 0.1), hash21(cellId + 0.2));
+            vec2 starUv = (cellId + starPos) / grid;
+            vec2 deltaPx = (screenUv - starUv) * iResolution.xy;
+            float sizePx = 0.25 + hash21(cellId + 0.3) * 0.45;
+            float d = length(deltaPx);
+            float core = smoothstep(sizePx, sizePx * 0.2, d);
+            float flickerPhase = hash21(cellId + 0.4) * 6.28318;
+            float flickerSpeed = 0.2 + hash21(cellId + 0.5) * 0.3;
+            float flickerAmount = mix(0.1, 0.35, hash21(cellId + 0.7));
+            float flicker = mix(1.0 - flickerAmount, 1.0 + flickerAmount, 0.5 + 0.5 * sin(iTime * flickerSpeed + flickerPhase));
+            float lumens = mix(1.0, 12.0, hash21(cellId + 0.6));
+            float brightness = mix(0.6, 1.4, lumens / 12.0);
+            return core * flicker * brightness;
+          }
+
+          vec2 wavedx(vec2 position, vec2 direction, float frequency, float timeshift) {
+            float x = dot(direction, position) * frequency + timeshift;
+            float wave = exp(sin(x) - 1.0);
+            float dx = wave * cos(x);
+            return vec2(wave, -dx);
+          }
+
+          float getwaves(vec2 position, int iterations) {
+            float wavePhaseShift = length(position) * 0.1;
+            vec2 swellDir = normalize(vec2(-0.25, 1.0));
+            float swellBias = 0.35;
+            float iter = 0.0;
+            float frequency = 1.0;
+            float timeMultiplier = 2.0;
+            float weight = 1.0;
+            float sumOfValues = 0.0;
+            float sumOfWeights = 0.0;
+            for (int i = 0; i < 16; i++) {
+              if (i >= iterations) break;
+              vec2 p = normalize(mix(vec2(sin(iter), cos(iter)), swellDir, swellBias));
+              vec2 res = wavedx(position, p, frequency, iTime * timeMultiplier + wavePhaseShift);
+              position += p * res.y * weight * DRAG_MULT;
+              sumOfValues += res.x * weight;
+              sumOfWeights += weight;
+              weight = mix(weight, 0.0, 0.2);
+              frequency *= 1.18;
+              timeMultiplier *= 1.07;
+              iter += 1232.399963;
+            }
+            float baseWaves = sumOfValues / sumOfWeights;
+
+            float swellPhase = dot(position, swellDir) * 0.18 - iTime * 0.08;
+            float swell = sin(swellPhase);
+            vec2 cameraPos = vec2(iTime * 0.2, 1.0);
+            float swellFade = smoothstep(28.0, 4.0, length(position - cameraPos));
+
+            return baseWaves + swell * swellFade * 0.35;
+          }
+
+          float raymarchwater(vec3 camera, vec3 start, vec3 end, float depth) {
+            vec3 pos = start;
+            vec3 dir = normalize(end - start);
+            for (int i = 0; i < RAYMARCH_STEPS; i++) {
+              float height = getwaves(pos.xz, ITERATIONS_RAYMARCH) * depth - depth;
+              if (height + 0.01 > pos.y) {
+                return distance(pos, camera);
+              }
+              pos += dir * (pos.y - height);
+            }
+            return distance(start, camera);
+          }
+
+          vec3 normal(vec2 pos, float e, float depth) {
+            vec2 ex = vec2(e, 0.0);
+            float H = getwaves(pos.xy, ITERATIONS_NORMAL) * depth;
+            vec3 a = vec3(pos.x, H, pos.y);
+            return normalize(cross(
+              a - vec3(pos.x - e, getwaves(pos.xy - ex.xy, ITERATIONS_NORMAL) * depth, pos.y),
+              a - vec3(pos.x, getwaves(pos.xy + ex.yx, ITERATIONS_NORMAL) * depth, pos.y + e)
+            ));
+          }
+
+          vec3 getRay(vec2 fragCoord) {
+            vec2 uv = ((fragCoord.xy / iResolution.xy) * 2.0 - 1.0) * vec2(iResolution.x / iResolution.y, 1.0);
+            vec3 proj = normalize(vec3(uv.x, uv.y, 1.5));
+            return createRotationMatrixAxisAngle(vec3(1.0, 0.0, 0.0), 0.14) * proj;
+          }
+
+          float intersectPlane(vec3 origin, vec3 direction, vec3 point, vec3 normal) {
+            return clamp(dot(point - origin, normal) / dot(direction, normal), -1.0, 9991999.0);
+          }
+
+          vec3 skyUVToColor(vec2 uv) {
+            vec3 topColor = vec3(0.015, 0.02, 0.04);
+            vec3 bottomColor = vec3(0.03, 0.035, 0.05);
+            return mix(bottomColor, topColor, uv.y);
+          }
+
+          vec2 skyUV(vec3 dir) {
+            float u = atan(dir.z, dir.x) / (2.0 * PI) + 0.5;
+            float v = clamp(dir.y * 0.5 + 0.5, 0.0, 1.0);
+            return vec2(u, v);
+          }
+
+          vec3 getNightSky(vec3 dir) {
+            vec2 uv = skyUV(dir);
+            vec3 color = skyUVToColor(uv);
+
+            vec2 screenUv = dirToScreenUV(dir);
+            if (screenUv.x >= 0.0 && screenUv.x <= 1.0 && screenUv.y >= 0.0 && screenUv.y <= 1.0 && screenUv.y > 0.35) {
+              vec2 grid = vec2(40.0, 30.0);
+              vec2 baseCell = floor(vec2(screenUv.x * grid.x, screenUv.y * grid.y));
+              float s = 0.0;
+              for (int yi = -1; yi <= 1; yi++) {
+                for (int xi = -1; xi <= 1; xi++) {
+                  vec2 cell = baseCell + vec2(float(xi), float(yi));
+                  if (cell.y < 0.0 || cell.y >= grid.y) continue;
+                  cell.x = mod(cell.x + grid.x, grid.x);
+                  s += star(screenUv, cell, grid);
+                }
+              }
+              float horizonFade = smoothstep(0.35, 0.55, screenUv.y);
+              color += vec3(1.0, 0.97, 0.9) * s * horizonFade;
+            }
+
+            return color;
+          }
+
+          vec3 aces_tonemap(vec3 color) {
+            mat3 m1 = mat3(
+              0.59719, 0.07600, 0.02840,
+              0.35458, 0.90834, 0.13383,
+              0.04823, 0.01566, 0.83777
+            );
+            mat3 m2 = mat3(
+              1.60475, -0.10208, -0.00327,
+              -0.53108, 1.10813, -0.07276,
+              -0.07367, -0.00605, 1.07602
+            );
+            vec3 v = m1 * color;
+            vec3 a = v * (v + 0.0245786) - 0.000090537;
+            vec3 b = v * (0.983729 * v + 0.4329510) + 0.238081;
+            return pow(clamp(m2 * (a / b), 0.0, 1.0), vec3(1.0 / 2.2));
+          }
+
+          void main() {
+            vec3 ray = getRay(gl_FragCoord.xy);
+
+            if (ray.y >= 0.0) {
+              vec3 sky = getNightSky(ray);
+              gl_FragColor = vec4(aces_tonemap(sky * 2.0), 1.0);
+              return;
+            }
+
+            vec3 waterPlaneHigh = vec3(0.0, 0.0, 0.0);
+            vec3 waterPlaneLow = vec3(0.0, -WATER_DEPTH, 0.0);
+            vec3 origin = vec3(iTime * 0.2, CAMERA_HEIGHT, 1.0);
+
+            float highPlaneHit = intersectPlane(origin, ray, waterPlaneHigh, vec3(0.0, 1.0, 0.0));
+            float lowPlaneHit = intersectPlane(origin, ray, waterPlaneLow, vec3(0.0, 1.0, 0.0));
+            vec3 highHitPos = origin + ray * highPlaneHit;
+            vec3 lowHitPos = origin + ray * lowPlaneHit;
+
+            float dist = raymarchwater(origin, highHitPos, lowHitPos, WATER_DEPTH);
+            vec3 waterHitPos = origin + ray * dist;
+            vec3 N = normal(waterHitPos.xz, 0.01, WATER_DEPTH);
+            N = mix(N, vec3(0.0, 1.0, 0.0), 0.8 * min(1.0, sqrt(dist * 0.01) * 1.1));
+
+            float fresnel = 0.04 + (1.0 - 0.04) * pow(1.0 - max(0.0, dot(-N, ray)), 5.0);
+            vec3 R = normalize(reflect(ray, N));
+            R.y = abs(R.y);
+
+            vec3 reflection = getNightSky(R);
+            vec3 scattering = vec3(0.02, 0.02, 0.03) * (0.2 + (waterHitPos.y + WATER_DEPTH) / WATER_DEPTH);
+            vec3 C = fresnel * reflection + scattering;
+
+            vec3 fogColor = vec3(0.03, 0.035, 0.05);
+            float fogAmount = 1.0 - exp(-dist * 0.02);
+            C = mix(C, fogColor, fogAmount);
+
+            gl_FragColor = vec4(aces_tonemap(C * 1.9), 1.0);
+          }
+        `;
+
+        function createShader(type, source) {
+          const shader = gl.createShader(type);
+          gl.shaderSource(shader, source);
+          gl.compileShader(shader);
+          if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
+            console.error(gl.getShaderInfoLog(shader));
+            gl.deleteShader(shader);
+            return null;
+          }
+          return shader;
+        }
+
+        function createProgram(vertexSource, fragmentSource) {
+          const vertexShader = createShader(gl.VERTEX_SHADER, vertexSource);
+          const fragmentShader = createShader(gl.FRAGMENT_SHADER, fragmentSource);
+          if (!vertexShader || !fragmentShader) {
+            return null;
+          }
+          const program = gl.createProgram();
+          gl.attachShader(program, vertexShader);
+          gl.attachShader(program, fragmentShader);
+          gl.linkProgram(program);
+          if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
+            console.error(gl.getProgramInfoLog(program));
+            return null;
+          }
+          return program;
+        }
+
+        const oceanProgram = createProgram(oceanVertexShaderSource, oceanFragmentShaderSource);
+        if (!oceanProgram) {
+          return;
+        }
+
+        const fullscreenBuffer = gl.createBuffer();
+        gl.bindBuffer(gl.ARRAY_BUFFER, fullscreenBuffer);
+        gl.bufferData(
+          gl.ARRAY_BUFFER,
+          new Float32Array([-1, -1, 1, -1, -1, 1, -1, 1, 1, -1, 1, 1]),
+          gl.STATIC_DRAW
+        );
+
+        const oceanPositionLocation = gl.getAttribLocation(oceanProgram, "position");
+        const oceanResolutionLocation = gl.getUniformLocation(oceanProgram, "iResolution");
+        const oceanTimeLocation = gl.getUniformLocation(oceanProgram, "iTime");
+
+        function resize() {
+          const width = window.innerWidth;
+          const height = window.innerHeight;
+          const dpr = window.devicePixelRatio || 1;
+          canvas.width = Math.max(1, Math.floor(width * dpr * renderScale));
+          canvas.height = Math.max(1, Math.floor(height * dpr * renderScale));
+          canvas.style.width = width + "px";
+          canvas.style.height = height + "px";
+          gl.viewport(0, 0, canvas.width, canvas.height);
+        }
+
+        window.addEventListener("resize", resize);
+        resize();
+
+        const start = performance.now();
+        const MAX_FPS = 30;
+        const FRAME_INTERVAL_MS = 1000 / MAX_FPS;
+        let lastRenderTime = -Infinity;
+
+        function render(now) {
+          if (now - lastRenderTime < FRAME_INTERVAL_MS) {
+            requestAnimationFrame(render);
+            return;
+          }
+          lastRenderTime = now;
+
+          const t = prefersReducedMotion ? 0 : (now - start) / 1000;
+
+          gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+          gl.viewport(0, 0, canvas.width, canvas.height);
+          gl.useProgram(oceanProgram);
+          gl.bindBuffer(gl.ARRAY_BUFFER, fullscreenBuffer);
+          gl.enableVertexAttribArray(oceanPositionLocation);
+          gl.vertexAttribPointer(oceanPositionLocation, 2, gl.FLOAT, false, 0, 0);
+          gl.uniform2f(oceanResolutionLocation, canvas.width, canvas.height);
+          gl.uniform1f(oceanTimeLocation, t);
+          gl.drawArrays(gl.TRIANGLES, 0, 6);
+
+          requestAnimationFrame(render);
+        }
+
+        requestAnimationFrame(render);
+      })();
+    </script>
+
+    <script>
+      const deck = document.querySelector(".deck");
+      const DECK_WIDTH = 1920;
+      const DECK_HEIGHT = 1080;
+
+      function scaleDeck() {
+        const scaleX = window.innerWidth / DECK_WIDTH;
+        const scaleY = window.innerHeight / DECK_HEIGHT;
+        const scale = Math.min(scaleX, scaleY);
+        deck.style.transform = `translate(-50%, -50%) scale(${scale})`;
+      }
+
+      window.addEventListener("resize", scaleDeck);
+      scaleDeck();
+
+      const slides = Array.from(document.querySelectorAll(".slide"));
+      const videos = Array.from(document.querySelectorAll("video"));
+
+      videos.forEach((video) => {
+        video.addEventListener("mouseenter", () => {
+          video.controls = true;
+        });
+        video.addEventListener("mouseleave", () => {
+          video.controls = false;
+        });
+      });
+
+      function updateSlideMedia() {
+        slides.forEach((slide, idx) => {
+          slide.querySelectorAll("video").forEach((video) => {
+            if (idx === slideIndex) {
+              video.controls = false;
+              video.currentTime = 0;
+              const playPromise = video.play();
+              if (playPromise) {
+                playPromise.catch(() => {});
+              }
+            } else {
+              video.pause();
+              video.controls = false;
+              video.currentTime = 0;
+            }
+          });
+        });
+      }
+
+      let slideIndex = 0;
+      let stepIndex = 0;
+      const touchState = {
+        id: null,
+        startX: 0,
+        startY: 0,
+      };
+
+      function clamp(value, min, max) {
+        return Math.max(min, Math.min(max, value));
+      }
+
+      function applySteps(slide) {
+        const steps = Array.from(slide.querySelectorAll(".step"));
+        steps.forEach((step, index) => {
+          step.classList.toggle("hidden", index >= stepIndex);
+        });
+        return steps.length;
+      }
+
+      function updateHash() {
+        const slideNumber = slides[slideIndex].dataset.slide;
+        const stepSuffix = stepIndex > 0 ? `.${stepIndex}` : "";
+        history.replaceState(null, "", `#${slideNumber}${stepSuffix}`);
+      }
+
+      function showSlide(index, { updateHash: shouldUpdateHash = true } = {}) {
+        slideIndex = clamp(index, 0, slides.length - 1);
+        slides.forEach((slide, idx) => {
+          slide.classList.toggle("active", idx === slideIndex);
+        });
+        updateSlideMedia();
+        const stepCount = applySteps(slides[slideIndex]);
+        stepIndex = clamp(stepIndex, 0, stepCount);
+        applySteps(slides[slideIndex]);
+
+        if (shouldUpdateHash) {
+          updateHash();
+        }
+      }
+
+      function parseHash(rawValue) {
+        const [slideValue, stepValue] = rawValue.split(".");
+        const slideNumber = Number.parseInt(slideValue, 10);
+        const index = Number.isNaN(slideNumber)
+          ? 0
+          : slides.findIndex((slide) => Number(slide.dataset.slide) === slideNumber);
+        const parsedStep = Number.parseInt(stepValue, 10);
+        return {
+          index: index === -1 ? 0 : index,
+          step: Number.isNaN(parsedStep) ? 0 : parsedStep,
+        };
+      }
+
+      function resolveRelativeHash(rawValue) {
+        const match = rawValue.match(/^(.*)~(next|prev)$/);
+        if (!match) {
+          return false;
+        }
+        const [, baseValue, direction] = match;
+        const baseState = baseValue
+          ? parseHash(baseValue)
+          : { index: slideIndex, step: stepIndex };
+        slideIndex = clamp(baseState.index, 0, slides.length - 1);
+        stepIndex = Math.max(0, baseState.step);
+        showSlide(slideIndex, { updateHash: false });
+        if (direction === "next") {
+          next({ updateHash: true });
+        } else {
+          prev({ updateHash: true });
+        }
+        return true;
+      }
+
+      function syncFromHash() {
+        const rawValue = window.location.hash.replace("#", "");
+        if (resolveRelativeHash(rawValue)) {
+          return;
+        }
+        const parsed = parseHash(rawValue);
+        stepIndex = parsed.step;
+        showSlide(parsed.index, { updateHash: false });
+      }
+
+      function next({ updateHash: shouldUpdateHash = true } = {}) {
+        const steps = Array.from(slides[slideIndex].querySelectorAll(".step"));
+        if (stepIndex < steps.length) {
+          stepIndex += 1;
+          applySteps(slides[slideIndex]);
+          if (shouldUpdateHash) {
+            updateHash();
+          }
+          return;
+        }
+        if (slideIndex >= slides.length - 1) {
+          return;
+        }
+        stepIndex = 0;
+        showSlide(slideIndex + 1, { updateHash: shouldUpdateHash });
+      }
+
+      function prev({ updateHash: shouldUpdateHash = true } = {}) {
+        if (stepIndex > 0) {
+          stepIndex -= 1;
+          applySteps(slides[slideIndex]);
+          if (shouldUpdateHash) {
+            updateHash();
+          }
+          return;
+        }
+        const nextIndex = clamp(slideIndex - 1, 0, slides.length - 1);
+        slideIndex = nextIndex;
+        const steps = Array.from(slides[slideIndex].querySelectorAll(".step"));
+        stepIndex = steps.length;
+        showSlide(slideIndex, { updateHash: shouldUpdateHash });
+      }
+
+      function first() {
+        stepIndex = 0;
+        showSlide(0);
+      }
+
+      function last() {
+        stepIndex = 0;
+        showSlide(slides.length - 1);
+      }
+
+      function goto(hash) {
+        const parsed = parseHash(hash.replace("#", ""));
+        stepIndex = parsed.step;
+        showSlide(parsed.index);
+      }
+
+      function resetTouchState() {
+        touchState.id = null;
+        touchState.startX = 0;
+        touchState.startY = 0;
+      }
+
+      function handleTouchNavigation(endX, endY) {
+        const deltaX = endX - touchState.startX;
+        const deltaY = endY - touchState.startY;
+        const absX = Math.abs(deltaX);
+        const absY = Math.abs(deltaY);
+
+        if (absX >= 60 && absX > absY * 1.2) {
+          if (deltaX < 0) {
+            next();
+          } else {
+            prev();
+          }
+          return;
+        }
+
+        if (absX <= 12 && absY <= 12) {
+          if (endX < window.innerWidth / 2) {
+            prev();
+          } else {
+            next();
+          }
+        }
+      }
+
+      window.addEventListener("hashchange", syncFromHash);
+      window.addEventListener("keydown", (event) => {
+        if (["ArrowRight", " ", "PageDown", "l", "j"].includes(event.key)) {
+          event.preventDefault();
+          next();
+        }
+        if (["ArrowLeft", "PageUp", "h", "k"].includes(event.key)) {
+          event.preventDefault();
+          prev();
+        }
+        if (event.key === "Home") {
+          event.preventDefault();
+          first();
+        }
+        if (event.key === "End") {
+          event.preventDefault();
+          last();
+        }
+      });
+
+      document.addEventListener("touchstart", (event) => {
+        if (event.touches.length !== 1) {
+          resetTouchState();
+          return;
+        }
+
+        const touch = event.changedTouches[0];
+        touchState.id = touch.identifier;
+        touchState.startX = touch.clientX;
+        touchState.startY = touch.clientY;
+      }, { passive: true });
+
+      document.addEventListener("touchend", (event) => {
+        if (touchState.id === null) {
+          return;
+        }
+
+        const touch = Array.from(event.changedTouches).find((candidate) => candidate.identifier === touchState.id);
+        if (!touch) {
+          return;
+        }
+
+        handleTouchNavigation(touch.clientX, touch.clientY);
+        resetTouchState();
+      }, { passive: true });
+
+      document.addEventListener("touchcancel", resetTouchState, { passive: true });
+
+      window.miniPresenter = {
+        next,
+        prev,
+        first,
+        last,
+        goto,
+        getSlideList() {
+          return slides.map((slide) => `#${slide.dataset.slide}`);
+        },
+        getCurrentSlide() {
+          return window.location.hash || `#${slides[slideIndex].dataset.slide}`;
+        },
+        getNotes(slideId) {
+          const target = typeof slideId === "string" && slideId ? slideId : (window.location.hash || `#${slides[slideIndex].dataset.slide}`);
+          const parsed = parseHash(target.replace("#", ""));
+          const slide = slides[clamp(parsed.index, 0, slides.length - 1)];
+          return slide?.dataset.notes || null;
+        }
+      };
+
+      syncFromHash();
+    </script>
+  </body>
+</html>
