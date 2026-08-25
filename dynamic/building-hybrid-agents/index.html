@@ -1119,7 +1119,7 @@ stream: true</pre>
                 <li>OpenAI Chat Completions</li>
                 <li>OpenAI Responses API</li>
                 <li>Anthropic Messages</li>
-                <li>Other OpenAI-compatible providers</li>
+                <li>Providers like OpenRouter use OpenAI-compatible APIs. Plus others</li>
               </ul>
             </div>
           </div>
@@ -1187,17 +1187,28 @@ stream: true</pre>
         </div>
       </section>
       <!-- Slide 27 -->
-      <section class="slide" data-slide="27" data-notes="Client: tui, Electron desktop app, mobile app, web, mcp? Unix socket vs ws">
+      <section class="slide" data-slide="27" data-notes="Client: TUI, Electron desktop app, mobile app, web, MCP. Transport examples: Unix socket and WebSocket.">
         <div class="frame frame-wide">
           <h2>Client</h2>
-          <ul class="dense">
-            <li>TUI</li>
-            <li>Electron desktop app</li>
-            <li>Mobile app</li>
-            <li>Web</li>
-            <li>MCP?</li>
-            <li>Unix socket vs WebSocket</li>
-          </ul>
+          <div class="split">
+            <div class="panel">
+              <h3>Surfaces</h3>
+              <ul>
+                <li>TUI</li>
+                <li>Electron desktop app</li>
+                <li>Mobile app</li>
+                <li>Web</li>
+              </ul>
+            </div>
+            <div class="panel">
+              <h3>Protocols</h3>
+              <ul>
+                <li>MCP?</li>
+                <li>Unix socket</li>
+                <li>WebSocket</li>
+              </ul>
+            </div>
+          </div>
         </div>
       </section>
       <!-- Slide 28 -->
