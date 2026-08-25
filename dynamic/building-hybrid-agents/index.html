@@ -165,6 +165,110 @@
         white-space: pre;
       }
 
+      .agent-map {
+        position: relative;
+        width: 1360px;
+        height: 770px;
+        margin: 0 auto;
+      }
+
+      .agent-node,
+      .session-worker-box {
+        border: 2px solid rgba(244, 246, 247, 0.78);
+        background: rgba(8, 12, 22, 0.42);
+        box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.03), 0 18px 54px rgba(0, 0, 0, 0.22);
+        backdrop-filter: blur(6px);
+      }
+
+      .agent-node {
+        position: absolute;
+        z-index: 3;
+        display: grid;
+        place-items: center;
+        box-sizing: border-box;
+        width: 236px;
+        height: 76px;
+        padding: 0 22px;
+        font-family: var(--mono-font);
+        font-size: 34px;
+        line-height: 1;
+        letter-spacing: -0.03em;
+        color: rgba(244, 246, 247, 0.96);
+        white-space: nowrap;
+      }
+
+      .agent-node-small {
+        width: 190px;
+        height: 70px;
+        font-size: 30px;
+      }
+
+      .session-worker-box {
+        position: absolute;
+        left: 80px;
+        top: 284px;
+        width: 1200px;
+        height: 360px;
+        z-index: 1;
+        border-color: rgba(244, 246, 247, 0.68);
+        background: linear-gradient(180deg, rgba(16, 23, 39, 0.62), rgba(8, 12, 22, 0.32));
+      }
+
+      .session-worker-title {
+        position: absolute;
+        left: 28px;
+        top: 22px;
+        font-family: var(--mono-font);
+        font-size: 22px;
+        letter-spacing: 0.11em;
+        text-transform: uppercase;
+        color: var(--muted);
+      }
+
+      .agent-client { left: 582px; top: 0; }
+      .agent-server { left: 582px; top: 142px; }
+      .agent-harness { left: 178px; top: 402px; }
+      .agent-runtime { left: 842px; top: 402px; width: 270px; }
+      .agent-storage { left: 870px; top: 532px; }
+      .agent-model { left: 201px; top: 690px; }
+
+      .agent-edge-label {
+        position: absolute;
+        z-index: 4;
+        font-family: var(--mono-font);
+        font-size: 21px;
+        line-height: 1.25;
+        letter-spacing: 0.02em;
+        color: rgba(244, 246, 247, 0.72);
+        background: rgba(10, 14, 24, 0.72);
+        padding: 5px 9px;
+      }
+
+      .agent-label-attach { left: 720px; top: 83px; }
+      .agent-label-route { left: 720px; top: 228px; }
+      .agent-label-tool-calls { left: 548px; top: 371px; }
+      .agent-label-tool-results { left: 545px; top: 486px; }
+      .agent-label-storage { left: 430px; top: 548px; }
+      .agent-label-events { left: 1040px; top: 491px; }
+      .agent-label-model { left: 350px; top: 654px; }
+
+      .agent-lines {
+        position: absolute;
+        inset: 0;
+        z-index: 2;
+        overflow: visible;
+      }
+
+      .agent-lines path,
+      .agent-lines line,
+      .agent-lines polyline {
+        fill: none;
+        stroke: rgba(244, 246, 247, 0.76);
+        stroke-width: 3;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+      }
+
       .slide-image {
         display: block;
         max-width: 92%;
@@ -924,33 +1028,40 @@ stream: true</pre>
       <!-- Slide 16 -->
       <section class="slide" data-slide="16" data-notes="Diagram: the client connects to the server. The server attaches and routes to a selected session worker. The session worker owns the harness, runtime/environment, and storage authority.">
         <div class="frame frame-wide">
-          <pre class="diagram-block">┌────────┐
-│ Client │
-└───┬────┘
-    │ attach / command
-    ▼
-┌────────┐
-│ Server │
-└───┬────┘
-    │ route to selected session
-    ▼
-┌────────────────────────────────────────────────────────┐
-│ Session Worker                                         │
-│                                                        │
-│  ┌─────────┐      tool calls       ┌─────────────┐     │
-│  │ Harness │ ────────────────────▶ │ Runtime/Env │     │
-│  └───┬──┬──┘ ◀──────────────────── └──────┬──────┘     │
-│      │  │       tool results              │            │
-│      │  │                                 │ events     │
-│      │  │ read/write session              ▼            │
-│      │  └────────────────────────▶ ┌─────────┐         │
-│      │                             │ Storage │         │
-│      │ prompts / completions       └─────────┘         │
-└──────┼─────────────────────────────────────────────────┘
-       ▼
-   ┌───────┐
-   │ Model │
-   └───────┘</pre>
+          <div class="agent-map" aria-label="Client connects to server, server routes to session worker, session worker owns harness runtime and storage">
+            <svg class="agent-lines" viewBox="0 0 1360 770" aria-hidden="true">
+              <defs>
+                <marker id="agent-arrow" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto" markerUnits="strokeWidth">
+                  <path d="M 0 0 L 10 5 L 0 10 z" fill="rgba(244, 246, 247, 0.76)"></path>
+                </marker>
+              </defs>
+              <line x1="700" y1="76" x2="700" y2="142" marker-end="url(#agent-arrow)"></line>
+              <line x1="700" y1="218" x2="700" y2="284" marker-end="url(#agent-arrow)"></line>
+              <line x1="414" y1="440" x2="842" y2="440" marker-end="url(#agent-arrow)"></line>
+              <line x1="842" y1="482" x2="414" y2="482" marker-end="url(#agent-arrow)"></line>
+              <line x1="960" y1="478" x2="960" y2="532" marker-end="url(#agent-arrow)"></line>
+              <polyline points="340,478 340,572 870,572" marker-end="url(#agent-arrow)"></polyline>
+              <line x1="296" y1="478" x2="296" y2="690" marker-end="url(#agent-arrow)"></line>
+            </svg>
+
+            <div class="agent-node agent-client">Client</div>
+            <div class="agent-edge-label agent-label-attach">attach / command</div>
+            <div class="agent-node agent-server">Server</div>
+            <div class="agent-edge-label agent-label-route">route to selected session</div>
+
+            <div class="session-worker-box">
+              <div class="session-worker-title">Session Worker</div>
+            </div>
+            <div class="agent-node agent-harness">Harness</div>
+            <div class="agent-edge-label agent-label-tool-calls">tool calls</div>
+            <div class="agent-node agent-runtime">Runtime / Env</div>
+            <div class="agent-edge-label agent-label-tool-results">tool results</div>
+            <div class="agent-edge-label agent-label-events">events</div>
+            <div class="agent-edge-label agent-label-storage">read/write session</div>
+            <div class="agent-node agent-node-small agent-storage">Storage</div>
+            <div class="agent-edge-label agent-label-model">prompts / completions</div>
+            <div class="agent-node agent-node-small agent-model">Model</div>
+          </div>
         </div>
       </section>
       <!-- Slide 17 -->
