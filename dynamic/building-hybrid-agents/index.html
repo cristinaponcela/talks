@@ -1137,7 +1137,13 @@ stream: true</pre>
         </div>
       </section>
       <!-- Slide 34 -->
-      <section class="slide" data-slide="34" data-notes="Example: Search API (https://github.com/earendil-works/pi/pull/7797/changes). Snippet 1: common composable search interface.">
+      <section class="slide" data-slide="34" data-notes="Building a composable API.">
+        <div class="frame frame-narrow center">
+          <p class="huge-text">Building a composable API</p>
+        </div>
+      </section>
+      <!-- Slide 35 -->
+      <section class="slide" data-slide="35" data-notes="Example: Search API (https://github.com/earendil-works/pi/pull/7797/changes). Snippet 1: common composable search interface.">
         <div class="frame frame-wide">
           <pre class="code-block"><code class="language-ts">export interface SessionSearchOptions {
   /** Restrict results to specific canonical entry types. */
@@ -1163,8 +1169,8 @@ export interface SessionSearch&lt;T extends SessionSearchHit = SessionSearchHit&
 }</code></pre>
         </div>
       </section>
-      <!-- Slide 35 -->
-      <section class="slide" data-slide="35" data-notes="Search API snippet 2: extends to scanning for in-memory storage and JSONL; portable identity across storage backends.">
+      <!-- Slide 36 -->
+      <section class="slide" data-slide="36" data-notes="Search API snippet 2: extends to scanning for in-memory storage and JSONL; portable identity across storage backends.">
         <div class="frame frame-wide">
           <pre class="code-block"><code class="language-ts">export type ScanningReadable&lt;TMetadata extends SessionMetadata = SessionMetadata&gt; =
   Pick&lt;SessionStorage&lt;TMetadata&gt;, &quot;getMetadata&quot; | &quot;findEntries&quot; | &quot;getLabel&quot;&gt;;
@@ -1187,14 +1193,14 @@ for await (const hit of search.search(&quot;Warsaw&quot;, { limit: 10 })) {
 }</code></pre>
         </div>
       </section>
-      <!-- Slide 36 -->
-      <section class="slide" data-slide="36" data-notes="Part transition: separating the client from the server/orchestrator process.">
+      <!-- Slide 37 -->
+      <section class="slide" data-slide="37" data-notes="Part transition: separating the client from the server/orchestrator process.">
         <div class="frame frame-narrow center">
           <p class="huge-text">Separating the client from the server</p>
         </div>
       </section>
-      <!-- Slide 37 -->
-      <section class="slide" data-slide="37" data-notes="Start a local Pi orchestrator daemon. The CLI talks to the daemon over a Unix socket using JSON IPC.">
+      <!-- Slide 38 -->
+      <section class="slide" data-slide="38" data-notes="Start a local Pi orchestrator daemon. The CLI talks to the daemon over a Unix socket using JSON IPC.">
         <div class="frame frame-wide">
           <h2>1. Start a local Pi daemon</h2>
           <pre class="flow-diagram">CLI
@@ -1208,8 +1214,8 @@ Pi Orchestrator Daemon
           <p class="flow-caption">The daemon owns lifecycle; the CLI only sends IPC commands.</p>
         </div>
       </section>
-      <!-- Slide 38 -->
-      <section class="slide" data-slide="38" data-notes="The Unix socket IPC returns structured JSON responses for commands like status.">
+      <!-- Slide 39 -->
+      <section class="slide" data-slide="39" data-notes="The Unix socket IPC returns structured JSON responses for commands like status.">
         <div class="frame frame-wide">
           <h2>2. Talk to it over IPC</h2>
           <pre class="code-block flow-code"><code>{
@@ -1225,8 +1231,8 @@ Pi Orchestrator Daemon
           <p class="flow-caption">Same idea as a small local server, but addressed by a socket file instead of a public port.</p>
         </div>
       </section>
-      <!-- Slide 39 -->
-      <section class="slide" data-slide="39" data-notes="The local machine registers with a control-plane broker service for discovery. The broker tracks online machines and capabilities, but does not run the Pi itself.">
+      <!-- Slide 40 -->
+      <section class="slide" data-slide="40" data-notes="The local machine registers with a control-plane broker service for discovery. The broker tracks online machines and capabilities, but does not run the Pi itself.">
         <div class="frame frame-wide">
           <h2>3. Register the machine with a broker</h2>
           <pre class="flow-diagram">Pi Orchestrator Daemon
@@ -1251,8 +1257,8 @@ Control-plane Broker
 }</code></pre>
         </div>
       </section>
-      <!-- Slide 40 -->
-      <section class="slide" data-slide="40" data-notes="Spawn a Pi through the orchestrator CLI. The spawn happens locally inside the daemon process.">
+      <!-- Slide 41 -->
+      <section class="slide" data-slide="41" data-notes="Spawn a Pi through the orchestrator CLI. The spawn happens locally inside the daemon process.">
         <div class="frame frame-wide">
           <h2>4. Spawn a Pi locally</h2>
           <pre class="flow-diagram">CLI ── spawn --label test-pi ──▶ Local Orchestrator ──▶ Pi Runtime</pre>
@@ -1272,8 +1278,8 @@ Control-plane Broker
 }</code></pre>
         </div>
       </section>
-      <!-- Slide 41 -->
-      <section class="slide" data-slide="41" data-notes="After spawn, the Pi runtime is registered with the broker for discovery. The broker knows the Pi is online and which machine owns it.">
+      <!-- Slide 42 -->
+      <section class="slide" data-slide="42" data-notes="After spawn, the Pi runtime is registered with the broker for discovery. The broker knows the Pi is online and which machine owns it.">
         <div class="frame frame-wide">
           <h2>5. The broker sees the Pi</h2>
           <pre class="flow-diagram">Spawned Pi
@@ -1295,8 +1301,8 @@ Control-plane Broker
 }</code></pre>
         </div>
       </section>
-      <!-- Slide 42 -->
-      <section class="slide" data-slide="42" data-notes="Once the Pi is spawned, we can drive the session through the existing Pi RPC command surface. This is the remote-control layer: prompt, steer, inspect state, switch sessions, run bash, compact, export, and so on.">
+      <!-- Slide 43 -->
+      <section class="slide" data-slide="43" data-notes="Once the Pi is spawned, we can drive the session through the existing Pi RPC command surface. This is the remote-control layer: prompt, steer, inspect state, switch sessions, run bash, compact, export, and so on.">
         <div class="frame frame-wide">
           <h2>6. Drive the session remotely</h2>
           <pre class="flow-diagram rpc-flow">Remote client / CLI ── RPC command ──▶ Orchestrator ──▶ Pi Runtime</pre>
@@ -1339,8 +1345,8 @@ $ orchestrator rpc ef833edd... \
           </div>
         </div>
       </section>
-      <!-- Slide 43 -->
-      <section class="slide" data-slide="43" data-notes="Lessons learned: Lefos, why we need hybrid. What I really want is to be able to connect to a Pi runtime from my phone, whether that lives on my computer or the cloud. It should work if I take a plane, or if I'm offline but a device is on, or while I'm sleeping.">
+      <!-- Slide 44 -->
+      <section class="slide" data-slide="44" data-notes="Lessons learned: Lefos, why we need hybrid. What I really want is to be able to connect to a Pi runtime from my phone, whether that lives on my computer or the cloud. It should work if I take a plane, or if I'm offline but a device is on, or while I'm sleeping.">
         <div class="frame frame-wide rule-block">
           <h2>Lessons Learned: Lefos</h2>
           <div class="quote quote-large">What I really want is to be able to connect to a Pi runtime from, say, my phone, whether that lives on my computer or the cloud.</div>
@@ -1350,14 +1356,14 @@ $ orchestrator rpc ef833edd... \
           </ul>
         </div>
       </section>
-      <!-- Slide 44 -->
-      <section class="slide" data-slide="44" data-notes="The goal is control, and choice. This is why I like OSS">
+      <!-- Slide 45 -->
+      <section class="slide" data-slide="45" data-notes="The goal is control, and choice. This is why I like OSS">
         <div class="frame frame-narrow center">
           <p class="huge-text">The goal is control, and choice.</p>
         </div>
       </section>
-      <!-- Slide 45 -->
-      <section class="slide" data-slide="45" data-notes="If everything is composable, you decide what lives where.">
+      <!-- Slide 46 -->
+      <section class="slide" data-slide="46" data-notes="If everything is composable, you decide what lives where.">
         <div class="frame frame-narrow center">
           <p class="big-text">If everything is composable,</p>
           <p class="huge-text">you decide</p>
