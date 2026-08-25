@@ -922,7 +922,7 @@ stream: true</pre>
         </div>
       </section>
       <!-- Slide 16 -->
-      <section class="slide" data-slide="16" data-notes="Diagram: model, harness, storage, server, client, ...">
+      <section class="slide" data-slide="16" data-notes="Diagram: the client connects to the server. The server attaches and routes to a selected session worker. The session worker owns the harness, runtime/environment, and storage authority.">
         <div class="frame frame-wide">
           <pre class="diagram-block">┌────────┐
 │ Client │
@@ -932,21 +932,25 @@ stream: true</pre>
 ┌────────┐
 │ Server │
 └───┬────┘
-    │ discover / route
+    │ route to selected session
     ▼
-┌─────────┐      tool calls       ┌─────────┐
-│ Harness │ ────────────────────▶ │ Runtime │
-└───┬──┬──┘ ◀──────────────────── └────┬────┘
-    │  │       tool results            │
-    │  │                               │ events / artifacts
-    │  │ read/write session            ▼
-    │  └────────────────────────▶ ┌─────────┐
-    │                             │ Storage │
-    │ prompts / completions       └─────────┘
-    ▼
-┌───────┐
-│ Model │
-└───────┘</pre>
+┌────────────────────────────────────────────────────────┐
+│ Session Worker                                         │
+│                                                        │
+│  ┌─────────┐      tool calls       ┌─────────────┐     │
+│  │ Harness │ ────────────────────▶ │ Runtime/Env │     │
+│  └───┬──┬──┘ ◀──────────────────── └──────┬──────┘     │
+│      │  │       tool results              │            │
+│      │  │                                 │ events     │
+│      │  │ read/write session              ▼            │
+│      │  └────────────────────────▶ ┌─────────┐         │
+│      │                             │ Storage │         │
+│      │ prompts / completions       └─────────┘         │
+└──────┼─────────────────────────────────────────────────┘
+       ▼
+   ┌───────┐
+   │ Model │
+   └───────┘</pre>
         </div>
       </section>
       <!-- Slide 17 -->
