@@ -246,9 +246,9 @@
 
       .agent-label-attach { left: 720px; top: 83px; }
       .agent-label-route { left: 720px; top: 228px; }
-      .agent-label-tool-calls { left: 548px; top: 371px; }
-      .agent-label-tool-results { left: 545px; top: 486px; }
-      .agent-label-storage { left: 430px; top: 548px; }
+      .agent-label-tool-calls { left: 548px; top: 382px; }
+      .agent-label-tool-results { left: 545px; top: 474px; }
+      .agent-label-storage { left: 430px; top: 584px; }
       .agent-label-events { left: 1040px; top: 491px; }
       .agent-label-model { left: 350px; top: 654px; }
 
@@ -1037,8 +1037,8 @@ stream: true</pre>
               </defs>
               <line x1="700" y1="76" x2="700" y2="142" marker-end="url(#agent-arrow)"></line>
               <line x1="700" y1="218" x2="700" y2="284" marker-end="url(#agent-arrow)"></line>
-              <line x1="414" y1="440" x2="842" y2="440" marker-end="url(#agent-arrow)"></line>
-              <line x1="842" y1="482" x2="414" y2="482" marker-end="url(#agent-arrow)"></line>
+              <line x1="414" y1="420" x2="842" y2="420" marker-end="url(#agent-arrow)"></line>
+              <line x1="842" y1="458" x2="414" y2="458" marker-end="url(#agent-arrow)"></line>
               <line x1="960" y1="478" x2="960" y2="532" marker-end="url(#agent-arrow)"></line>
               <polyline points="340,478 340,572 870,572" marker-end="url(#agent-arrow)"></polyline>
               <line x1="296" y1="478" x2="296" y2="690" marker-end="url(#agent-arrow)"></line>
@@ -1065,18 +1065,42 @@ stream: true</pre>
         </div>
       </section>
       <!-- Slide 17 -->
-      <section class="slide" data-slide="17" data-notes="Model. Local vs cloud, but via something like pi-ai we don't need to know as a client. Just make a request to provider-x/model-y and we should request to what is loaded.">
+      <section class="slide" data-slide="17" data-notes="Running example for Part II. Everything is local: ask the agent to create a notes.md file on the Desktop that says Hello World. We choose Fable 5 and the medium thinking level, if that model exposes one.">
+        <div class="frame frame-wide">
+          <h2>Running Example</h2>
+          <div class="split">
+            <div class="panel">
+              <h3>Prompt</h3>
+              <ul>
+                <li><code>Create a notes.md on my Desktop that says Hello World!</code></li>
+                <li>A tangible example to follow along with each component</li>
+              </ul>
+            </div>
+            <div class="panel">
+              <h3>Local setup</h3>
+              <ul>
+                <li>Model: <code>Fable 5</code></li>
+                <li>Thinking: <code>medium</code></li>
+                <li>Target: <code>~/Desktop/notes.md</code></li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </section>
+      <!-- Slide 18 -->
+      <section class="slide" data-slide="18" data-notes="Model. Local vs cloud, but via something like pi-ai we don't need to know as a client. Just make a request to provider-x/model-y and we should request to what is loaded.">
         <div class="frame frame-wide">
           <h2>Model</h2>
           <ul class="dense">
             <li>Local vs Cloud</li>
             <li>Via something like <code>pi-ai</code>, we don't need to know as a client</li>
             <li>Just make a request to <code>provider-x/model-y</code>, for as long as it is loaded</li>
+            <li>In our running example, <code>anthropic/claude-fable-5</code></li>
           </ul>
         </div>
       </section>
-      <!-- Slide 18 -->
-      <section class="slide" data-slide="18" data-notes="Harness. What actually drives the model: the agent loop, system prompt, tools, sandbox choices, extensions, and the AI abstraction layer.">
+      <!-- Slide 19 -->
+      <section class="slide" data-slide="19" data-notes="Harness. What actually drives the model: the agent loop, system prompt, tools, sandbox choices, extensions, and the AI abstraction layer.">
         <div class="frame frame-wide">
           <h2>Harness</h2>
           <div class="split">
@@ -1100,8 +1124,8 @@ stream: true</pre>
           </div>
         </div>
       </section>
-      <!-- Slide 19 -->
-      <section class="slide" data-slide="19" data-notes="AI Abstraction Layer. Local examples such as llama.cpp expose a local server with an OpenAI-compatible API. Cloud adapters cover APIs like OpenAI Completions, OpenAI Responses, and Anthropic Messages, normalizing them behind one model interface.">
+      <!-- Slide 20 -->
+      <section class="slide" data-slide="20" data-notes="AI Abstraction Layer. Local examples such as llama.cpp expose a local server with an OpenAI-compatible API. Cloud adapters cover APIs like OpenAI Completions, OpenAI Responses, and Anthropic Messages, normalizing them behind one model interface.">
         <div class="frame frame-wide">
           <h2>AI Abstraction Layer</h2>
           <div class="split">
@@ -1125,23 +1149,13 @@ stream: true</pre>
           </div>
         </div>
       </section>
-      <!-- Slide 20 -->
-      <section class="slide" data-slide="20" data-notes="Runtime / environment. Where the actual tool calls and side effects occur">
+      <!-- Slide 21 -->
+      <section class="slide" data-slide="21" data-notes="Runtime / environment. Where the actual tool calls and side effects occur">
         <div class="frame frame-wide">
           <h2>Runtime / Environment</h2>
           <ul class="dense">
             <li>Where the actual tool calls occur</li>
             <li>Where side effects occur</li>
-          </ul>
-        </div>
-      </section>
-      <!-- Slide 21 -->
-      <section class="slide" data-slide="21" data-notes="Example of how this is abstracted in pi">
-        <div class="frame frame-wide">
-          <h2>Runtime / Environment Example</h2>
-          <ul class="dense">
-            <li>Example of how this is abstracted in pi</li>
-            <li>TODO: add exact pi abstraction / code</li>
           </ul>
         </div>
       </section>
@@ -1151,7 +1165,8 @@ stream: true</pre>
           <h2>Storage</h2>
           <ul class="dense">
             <li>Transcripts</li>
-            <li>Encrypted reasoning</li>
+            <li>Privacy</li>
+            <li>Portability, e.g. encrypted reasoning</li>
             <li>Why local and cloud don't play on the same level field</li>
           </ul>
         </div>
@@ -1169,25 +1184,19 @@ stream: true</pre>
         </div>
       </section>
       <!-- Slide 25 -->
-      <section class="slide" data-slide="25" data-notes="Server">
-        <div class="frame frame-narrow center">
-          <p class="huge-text">Server</p>
-          <p class="big-text">TODO</p>
-        </div>
-      </section>
-      <!-- Slide 26 -->
-      <section class="slide" data-slide="26" data-notes="Control plane. Coordinator for discovery">
+      <section class="slide" data-slide="25" data-notes="Server. In the running example, the local server owns session records, accepts the client connection, attaches the client to the selected session, and routes commands to the session worker.">
         <div class="frame frame-wide">
-          <h2>Control Plane</h2>
+          <h2>Server</h2>
           <ul class="dense">
-            <li>Coordinator</li>
-            <li>Broker service for discovery</li>
-            <li>TODO: add exact relationship between server, coordinator</li>
+            <li>Owns session records</li>
+            <li>Accepts the client connection</li>
+            <li>Attaches the client to the selected session</li>
+            <li>Routes commands to the session worker</li>
           </ul>
         </div>
       </section>
-      <!-- Slide 27 -->
-      <section class="slide" data-slide="27" data-notes="Client: TUI, Electron desktop app, mobile app, web, MCP. Transport examples: Unix socket and WebSocket.">
+      <!-- Slide 26 -->
+      <section class="slide" data-slide="26" data-notes="Client: TUI, Electron desktop app, mobile app, web, MCP. Transport examples: Unix socket and WebSocket.">
         <div class="frame frame-wide">
           <h2>Client</h2>
           <div class="split">
@@ -1211,29 +1220,22 @@ stream: true</pre>
           </div>
         </div>
       </section>
-      <!-- Slide 28 -->
-      <section class="slide" data-slide="28" data-notes="Example">
-        <div class="frame frame-narrow center">
-          <p class="huge-text">Example</p>
-          <p class="big-text">TODO</p>
-        </div>
-      </section>
-      <!-- Slide 29 -->
-      <section class="slide" data-slide="29" data-notes="Part III: Composing the agent">
+      <!-- Slide 27 -->
+      <section class="slide" data-slide="27" data-notes="Part III: Composing the agent">
         <div class="frame frame-narrow center">
           <p class="eyebrow">Part III</p>
           <p class="huge-text">Composing the agent</p>
         </div>
       </section>
-      <!-- Slide 30 -->
-      <section class="slide" data-slide="30" data-notes="If designed with enough abstraction, every component of the agent should be able to live anywhere, arbitrarily.">
+      <!-- Slide 28 -->
+      <section class="slide" data-slide="28" data-notes="If designed with enough abstraction, every component of the agent should be able to live anywhere, arbitrarily.">
         <div class="frame frame-narrow center">
           <p class="big-text">If designed with enough abstraction, every component of the agent should be able to</p>
           <p class="huge-text">live anywhere, arbitrarily.</p>
         </div>
       </section>
-      <!-- Slide 31 -->
-      <section class="slide" data-slide="31" data-notes="The client and server can run in separate processes, or on separate machines. The client attaches to sessions through a transport protocol, like a Unix socket or WebSocket.">
+      <!-- Slide 29 -->
+      <section class="slide" data-slide="29" data-notes="The client and server can run in separate processes, or on separate machines. The client attaches to sessions through a transport protocol, like a Unix socket or WebSocket.">
         <div class="frame frame-wide">
           <h2>Abstracting Components</h2>
           <ul class="dense">
@@ -1243,8 +1245,8 @@ stream: true</pre>
           </ul>
         </div>
       </section>
-      <!-- Slide 32 -->
-      <section class="slide" data-slide="32" data-notes="Abstracting the environment. For Node, we wrap filesystem and shell access in a NodeExecutionEnv with methods to find paths, read and write files, and exec. So the harness depends on an ExecutionEnv capability rather than directly on node:fs or node:child_process. For SQLite, we wrap node:sqlite behind SqliteDatabase, SqliteStatement, and SqliteDatabaseFactory, so storage code depends on a node:sqlite-shaped facade and other implementations like sqlite3 or better-sqlite3 only need adapters into that shape.">
+      <!-- Slide 30 -->
+      <section class="slide" data-slide="30" data-notes="Abstracting the environment. For Node, we wrap filesystem and shell access in a NodeExecutionEnv with methods to find paths, read and write files, and exec. So the harness depends on an ExecutionEnv capability rather than directly on node:fs or node:child_process. For SQLite, we wrap node:sqlite behind SqliteDatabase, SqliteStatement, and SqliteDatabaseFactory, so storage code depends on a node:sqlite-shaped facade and other implementations like sqlite3 or better-sqlite3 only need adapters into that shape.">
         <div class="frame frame-wide">
           <h2>Abstracting the environment</h2>
           <div class="split">
@@ -1267,14 +1269,14 @@ stream: true</pre>
           </div>
         </div>
       </section>
-      <!-- Slide 33 -->
-      <section class="slide" data-slide="33" data-notes="Building a composable API.">
+      <!-- Slide 31 -->
+      <section class="slide" data-slide="31" data-notes="Building a composable API.">
         <div class="frame frame-narrow center">
           <p class="huge-text">Building a composable API</p>
         </div>
       </section>
-      <!-- Slide 34 -->
-      <section class="slide" data-slide="34" data-notes="Example: Search API (https://github.com/earendil-works/pi/pull/7797/changes). Snippet 1: common composable search interface.">
+      <!-- Slide 32 -->
+      <section class="slide" data-slide="32" data-notes="Example: Search API (https://github.com/earendil-works/pi/pull/7797/changes). Snippet 1: common composable search interface.">
         <div class="frame frame-wide">
           <pre class="code-block"><code class="language-ts">export interface SessionSearchOptions {
   /** Restrict results to specific canonical entry types. */
@@ -1300,8 +1302,8 @@ export interface SessionSearch&lt;T extends SessionSearchHit = SessionSearchHit&
 }</code></pre>
         </div>
       </section>
-      <!-- Slide 35 -->
-      <section class="slide" data-slide="35" data-notes="Search API snippet 2: extends to scanning for in-memory storage and JSONL; portable identity across storage backends.">
+      <!-- Slide 33 -->
+      <section class="slide" data-slide="33" data-notes="Search API snippet 2: extends to scanning for in-memory storage and JSONL; portable identity across storage backends.">
         <div class="frame frame-wide">
           <pre class="code-block"><code class="language-ts">export type ScanningReadable&lt;TMetadata extends SessionMetadata = SessionMetadata&gt; =
   Pick&lt;SessionStorage&lt;TMetadata&gt;, &quot;getMetadata&quot; | &quot;findEntries&quot; | &quot;getLabel&quot;&gt;;
@@ -1324,14 +1326,14 @@ for await (const hit of search.search(&quot;Warsaw&quot;, { limit: 10 })) {
 }</code></pre>
         </div>
       </section>
-      <!-- Slide 36 -->
-      <section class="slide" data-slide="36" data-notes="Part transition: separating the client from the server/orchestrator process.">
+      <!-- Slide 34 -->
+      <section class="slide" data-slide="34" data-notes="Part transition: separating the client from the server/orchestrator process.">
         <div class="frame frame-narrow center">
           <p class="huge-text">Separating the client from the server</p>
         </div>
       </section>
-      <!-- Slide 37 -->
-      <section class="slide" data-slide="37" data-notes="Start a local Pi orchestrator daemon. The CLI talks to the daemon over a Unix socket using JSON IPC.">
+      <!-- Slide 35 -->
+      <section class="slide" data-slide="35" data-notes="Start a local Pi orchestrator daemon. The CLI talks to the daemon over a Unix socket using JSON IPC.">
         <div class="frame frame-wide">
           <h2>1. Start a local Pi daemon</h2>
           <pre class="flow-diagram">CLI
@@ -1345,8 +1347,8 @@ Pi Orchestrator Daemon
           <p class="flow-caption">The daemon owns lifecycle; the CLI only sends IPC commands.</p>
         </div>
       </section>
-      <!-- Slide 38 -->
-      <section class="slide" data-slide="38" data-notes="The Unix socket IPC returns structured JSON responses for commands like status.">
+      <!-- Slide 36 -->
+      <section class="slide" data-slide="36" data-notes="The Unix socket IPC returns structured JSON responses for commands like status.">
         <div class="frame frame-wide">
           <h2>2. Talk to it over IPC</h2>
           <pre class="code-block flow-code"><code>{
@@ -1362,8 +1364,8 @@ Pi Orchestrator Daemon
           <p class="flow-caption">Same idea as a small local server, but addressed by a socket file instead of a public port.</p>
         </div>
       </section>
-      <!-- Slide 39 -->
-      <section class="slide" data-slide="39" data-notes="The local machine registers with a control-plane broker service for discovery. The broker tracks online machines and capabilities, but does not run the Pi itself.">
+      <!-- Slide 37 -->
+      <section class="slide" data-slide="37" data-notes="The local machine registers with a control-plane broker service for discovery. The broker tracks online machines and capabilities, but does not run the Pi itself.">
         <div class="frame frame-wide">
           <h2>3. Register the machine with a broker</h2>
           <pre class="flow-diagram">Pi Orchestrator Daemon
@@ -1388,8 +1390,8 @@ Control-plane Broker
 }</code></pre>
         </div>
       </section>
-      <!-- Slide 40 -->
-      <section class="slide" data-slide="40" data-notes="Spawn a Pi through the orchestrator CLI. The spawn happens locally inside the daemon process.">
+      <!-- Slide 38 -->
+      <section class="slide" data-slide="38" data-notes="Spawn a Pi through the orchestrator CLI. The spawn happens locally inside the daemon process.">
         <div class="frame frame-wide">
           <h2>4. Spawn a Pi locally</h2>
           <pre class="flow-diagram">CLI ── spawn --label test-pi ──▶ Local Orchestrator ──▶ Pi Runtime</pre>
@@ -1409,8 +1411,8 @@ Control-plane Broker
 }</code></pre>
         </div>
       </section>
-      <!-- Slide 41 -->
-      <section class="slide" data-slide="41" data-notes="After spawn, the Pi runtime is registered with the broker for discovery. The broker knows the Pi is online and which machine owns it.">
+      <!-- Slide 39 -->
+      <section class="slide" data-slide="39" data-notes="After spawn, the Pi runtime is registered with the broker for discovery. The broker knows the Pi is online and which machine owns it.">
         <div class="frame frame-wide">
           <h2>5. The broker sees the Pi</h2>
           <pre class="flow-diagram">Spawned Pi
@@ -1432,8 +1434,8 @@ Control-plane Broker
 }</code></pre>
         </div>
       </section>
-      <!-- Slide 42 -->
-      <section class="slide" data-slide="42" data-notes="Once the Pi is spawned, we can drive the session through the existing Pi RPC command surface. This is the remote-control layer: prompt, steer, inspect state, switch sessions, run bash, compact, export, and so on.">
+      <!-- Slide 40 -->
+      <section class="slide" data-slide="40" data-notes="Once the Pi is spawned, we can drive the session through the existing Pi RPC command surface. This is the remote-control layer: prompt, steer, inspect state, switch sessions, run bash, compact, export, and so on.">
         <div class="frame frame-wide">
           <h2>6. Drive the session remotely</h2>
           <pre class="flow-diagram rpc-flow">Remote client / CLI ── RPC command ──▶ Orchestrator ──▶ Pi Runtime</pre>
@@ -1476,8 +1478,8 @@ $ orchestrator rpc ef833edd... \
           </div>
         </div>
       </section>
-      <!-- Slide 43 -->
-      <section class="slide" data-slide="43" data-notes="Lessons learned: Lefos, why we need hybrid. What I really want is to be able to connect to a Pi runtime from my phone, whether that lives on my computer or the cloud. It should work if I take a plane, or if I'm offline but a device is on, or while I'm sleeping.">
+      <!-- Slide 41 -->
+      <section class="slide" data-slide="41" data-notes="Lessons learned: Lefos, why we need hybrid. What I really want is to be able to connect to a Pi runtime from my phone, whether that lives on my computer or the cloud. It should work if I take a plane, or if I'm offline but a device is on, or while I'm sleeping.">
         <div class="frame frame-wide rule-block">
           <h2>Lessons Learned: Lefos</h2>
           <div class="quote quote-large">What I really want is to be able to connect to a Pi runtime from, say, my phone, whether that lives on my computer or the cloud.</div>
@@ -1487,14 +1489,14 @@ $ orchestrator rpc ef833edd... \
           </ul>
         </div>
       </section>
-      <!-- Slide 44 -->
-      <section class="slide" data-slide="44" data-notes="The goal is control, and choice. This is why I like OSS">
+      <!-- Slide 42 -->
+      <section class="slide" data-slide="42" data-notes="The goal is control, and choice. This is why I like OSS">
         <div class="frame frame-narrow center">
           <p class="huge-text">The goal is control, and choice.</p>
         </div>
       </section>
-      <!-- Slide 45 -->
-      <section class="slide" data-slide="45" data-notes="If everything is composable, you decide what lives where.">
+      <!-- Slide 43 -->
+      <section class="slide" data-slide="43" data-notes="If everything is composable, you decide what lives where.">
         <div class="frame frame-narrow center">
           <p class="big-text">If everything is composable,</p>
           <p class="huge-text">you decide</p>
